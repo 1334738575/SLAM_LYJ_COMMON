@@ -5,7 +5,7 @@
 
 NSP_SLAM_LYJ_MATH_BEGIN
 
-// Rodrigues
+// Rodrigues£¬Rwc£¬theta is inclocked
 template <typename T>
 static Eigen::Matrix<T, 3, 3> Rodrigues2RotMatrix(const Eigen::Matrix<T, 3, 1> &_r, const T _theta)
 {
