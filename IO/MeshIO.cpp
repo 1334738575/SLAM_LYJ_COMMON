@@ -1,18 +1,19 @@
 #include "MeshIO.h"
 
-
 NSP_SLAM_LYJ_BEGIN
 
-SLAM_LYJ_API void writePLY(const std::string& filename, const BaseTriMesh& btm) {
+SLAM_LYJ_API void writePLY(const std::string &filename, const BaseTriMesh &btm)
+{
     std::ofstream file(filename);
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         std::cerr << "无法创建文件: " << filename << std::endl;
         return;
     }
 
-    const std::vector<Eigen::Vector3f>& vertices = btm.getVertexs();
+    const std::vector<Eigen::Vector3f> &vertices = btm.getVertexs();
     uint32_t vCnt = vertices.size();
-    const std::vector<BaseTriFace>& faces = btm.getFaces();
+    const std::vector<BaseTriFace> &faces = btm.getFaces();
     uint32_t fCnt = faces.size();
 
     // 写入 PLY 头部
@@ -23,12 +24,14 @@ SLAM_LYJ_API void writePLY(const std::string& filename, const BaseTriMesh& btm) 
     file << "property float x\n";
     file << "property float y\n";
     file << "property float z\n";
-    if (btm.isEnableVNormals()) {
+    if (btm.isEnableVNormals())
+    {
         file << "property float nx\n";
         file << "property float ny\n";
         file << "property float nz\n";
     }
-    if (btm.isEnableVColors()) {
+    if (btm.isEnableVColors())
+    {
         // 头部添加颜色属性
         file << "property uchar red\n";
         file << "property uchar green\n";
@@ -36,48 +39,62 @@ SLAM_LYJ_API void writePLY(const std::string& filename, const BaseTriMesh& btm) 
     }
     file << "element face " << fCnt << "\n";
     file << "property list uchar int vertex_indices\n";
-    if (btm.isEnableFNormals()) {
-        file << "property float fnx\n";
-        file << "property float fny\n";
-        file << "property float fnz\n";
-    }
+    //if (btm.isEnableFNormals())
+    //{
+    //    file << "property float fnx\n";
+    //    file << "property float fny\n";
+    //    file << "property float fnz\n";
+    //}
     file << "end_header\n";
 
     // 写入顶点数据
-    for (int i = 0; i < vCnt; ++i) {
-        file << vertices[i](0) << " " << vertices[i](1) << " " << vertices[i](2) << "\n";
-        if (btm.isEnableVColors()) {
-            // 写入顶点时添加颜色
-            file << btm.getVColor(i)(0) << " " << btm.getVColor(i)(1) << " " << btm.getVColor(i)(2) << "\n";
-        }
-        if (btm.isEnableVNormals()) {
+    int r;
+    int g;
+    int b;
+    for (int i = 0; i < vCnt; ++i)
+    {
+        file << vertices[i](0) << " " << vertices[i](1) << " " << vertices[i](2);
+        if (btm.isEnableVNormals())
+        {
             // 写入顶点时添加法向
-            file << btm.getVNormal(i)(0) << " " << btm.getVNormal(i)(1) << " " << btm.getVNormal(i)(2) << "\n";
+            file << " " << btm.getVNormal(i)(0) << " " << btm.getVNormal(i)(1) << " " << btm.getVNormal(i)(2);
         }
+        if (btm.isEnableVColors())
+        {
+            // 写入顶点时添加颜色
+            r = (int)(btm.getVColor(i)(0) * 255);
+            g = (int)(btm.getVColor(i)(1) * 255);
+            b = (int)(btm.getVColor(i)(2) * 255);
+            file << " " << r << " " << g << " " << b;
+        }
+        file << "\n";
     }
 
     // 写入面数据
-    for (int i = 0; i < fCnt; ++i) {
+    for (int i = 0; i < fCnt; ++i)
+    {
         file << "3 " << faces[i].vId_[0] << " " << faces[i].vId_[1] << " " << faces[i].vId_[2] << "\n";
-        if (btm.isEnableFNormals()) {
-            file << "3 " << btm.getFNormal(i)(0) << " " << btm.getFNormal(i)(1) << " " << btm.getFNormal(i)(2) << "\n";
-        }
+        //if (btm.isEnableFNormals())
+        //{
+        //    file << "3 " << btm.getFNormal(i)(0) << " " << btm.getFNormal(i)(1) << " " << btm.getFNormal(i)(2) << "\n";
+        //}
     }
 
     file.close();
 }
 
-
-SLAM_LYJ_API void writePLYBin(const std::string& filename, const BaseTriMesh& btm) {
+SLAM_LYJ_API void writePLYBin(const std::string &filename, const BaseTriMesh &btm)
+{
     std::ofstream file(filename);
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
         std::cerr << "无法创建文件: " << filename << std::endl;
         return;
     }
 
-    const std::vector<Eigen::Vector3f>& vertices = btm.getVertexs();
+    const std::vector<Eigen::Vector3f> &vertices = btm.getVertexs();
     uint32_t vCnt = vertices.size();
-    const std::vector<BaseTriFace>& faces = btm.getFaces();
+    const std::vector<BaseTriFace> &faces = btm.getFaces();
     uint32_t fCnt = faces.size();
 
     // 写入 PLY 头部
@@ -88,63 +105,360 @@ SLAM_LYJ_API void writePLYBin(const std::string& filename, const BaseTriMesh& bt
     file << "property float x\n";
     file << "property float y\n";
     file << "property float z\n";
-    if (btm.isEnableVNormals()) {
+    if (btm.isEnableVNormals())
+    {
         file << "property float nx\n";
         file << "property float ny\n";
         file << "property float nz\n";
     }
-    if (btm.isEnableVColors()) {
+    if (btm.isEnableVColors())
+    {
         // 头部添加颜色属性
-        file << "property float r\n";
-        file << "property float g\n";
-        file << "property float b\n";
+        file << "property uchar red\n";
+        file << "property uchar green\n";
+        file << "property uchar blue\n";
     }
     file << "element face " << fCnt << "\n";
     file << "property list uchar int vertex_indices\n";
-    if (btm.isEnableFNormals()) {
-        file << "property float fnx\n";
-        file << "property float fny\n";
-        file << "property float fnz\n";
-    }
+    //if (btm.isEnableFNormals())
+    //{
+    //    file << "property float fnx\n";
+    //    file << "property float fny\n";
+    //    file << "property float fnz\n";
+    //}
     file << "end_header\n";
 
-    //# OBJ 线段示例
-    //l 0 1  # 顶点0到顶点1的线
-    //l 1 2
+    // # OBJ 线段示例
+    // l 0 1  # 顶点0到顶点1的线
+    // l 1 2
 
     // 写入顶点数据
-    for (int i = 0; i < vCnt; ++i) {
-        writeBinary(file, vertices[i](0));
-        writeBinary(file, vertices[i](1));
-        writeBinary(file, vertices[i](2));
-        if (btm.isEnableVColors()) {
-            writeBinary(file, btm.getVColor(i)(0));
-            writeBinary(file, btm.getVColor(i)(1));
-            writeBinary(file, btm.getVColor(i)(2));
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+    for (int i = 0; i < vCnt; ++i)
+    {
+        writeBinary<float>(file, vertices[i](0));
+        writeBinary<float>(file, vertices[i](1));
+        writeBinary<float>(file, vertices[i](2));
+        if (btm.isEnableVNormals())
+        {
+            writeBinary<float>(file, btm.getVNormal(i)(0));
+            writeBinary<float>(file, btm.getVNormal(i)(1));
+            writeBinary<float>(file, btm.getVNormal(i)(2));
         }
-        if (btm.isEnableVNormals()) {
-            writeBinary(file, btm.getVNormal(i)(0));
-            writeBinary(file, btm.getVNormal(i)(1));
-            writeBinary(file, btm.getVNormal(i)(2));
+        if (btm.isEnableVColors())
+        {
+            r = (unsigned char)(btm.getVColor(i)(0) * 255);
+            g = (unsigned char)(btm.getVColor(i)(1) * 255);
+            b = (unsigned char)(btm.getVColor(i)(2) * 255);
+            writeBinary<unsigned char>(file, r);
+            writeBinary<unsigned char>(file, g);
+            writeBinary<unsigned char>(file, b);
         }
     }
 
     // 写入面数据
     unsigned char fvSize = 3;
-    for (int i = 0; i < fCnt; ++i) {
-        writeBinary(file, fvSize);
-        writeBinary(file, faces[i].vId_[0]);
-        writeBinary(file, faces[i].vId_[1]);
-        writeBinary(file, faces[i].vId_[2]);
-        if (btm.isEnableFNormals()) {
-            writeBinary(file, btm.getFNormal(i)(0));
-            writeBinary(file, btm.getFNormal(i)(1));
-            writeBinary(file, btm.getFNormal(i)(2));
-        }
+    for (int i = 0; i < fCnt; ++i)
+    {
+        writeBinary<unsigned char>(file, fvSize);
+        writeBinary<int>(file, faces[i].vId_[0]);
+        writeBinary<int>(file, faces[i].vId_[1]);
+        writeBinary<int>(file, faces[i].vId_[2]);
+        //if (btm.isEnableFNormals())
+        //{
+        //    writeBinary<float>(file, btm.getFNormal(i)(0));
+        //    writeBinary<float>(file, btm.getFNormal(i)(1));
+        //    writeBinary<float>(file, btm.getFNormal(i)(2));
+        //}
     }
 
     file.close();
 }
 
+SLAM_LYJ_API void readPLY(const std::string& filename, BaseTriMesh& btm)
+{
+    btm.reset();
+    std::ifstream file(filename);
+    std::string line;
+    int vSize = 0;
+    int fSize = 0;
+    std::vector<Eigen::Vector3f>& vs = btm.getVertexs();
+    std::vector<BaseTriFace>& fs = btm.getFaces();
+    bool hasVColor = false;
+    bool hasVNormal = false;
+    int colorSize = 3;
+    if (!file.is_open())
+    {
+        std::cout << "open " << filename << " failed!" << std::endl;
+        return;
+    }
+    std::getline(file, line);
+    if (line != "ply")
+    {
+        std::cout << "Not a valid PLY file: " << filename << std::endl;
+        return;
+    }
+    std::getline(file, line);
+    if (line.find("format ascii") == std::string::npos)
+    {
+        std::cout << "can't read ASCII PLY format: " << filename << std::endl;
+        if (line.find("format binary_little_endian") == std::string::npos)
+            return;
+        file.close();
+        std::cout << "try to read Binary PLY." << std::endl;
+        return readPLYBin(filename, btm);
+	}
+    std::getline(file, line);
+    while (line.find("element vertex") == std::string::npos) {
+        std::getline(file, line);
+    }
+    int loc = line.rfind(" ");
+    std::string vSizeStr = line.substr(loc + 1);
+    vSize = std::stoi(vSizeStr);
+    vs.resize(vSize);
+
+    //xyz
+    std::getline(file, line);
+    std::getline(file, line);
+    std::getline(file, line);
+    
+    std::getline(file, line);
+    while (line != "end_header") {
+        if (line.find("red") != std::string::npos)
+        {
+            std::cout << "has vColor" << std::endl;
+            std::getline(file, line);
+            std::getline(file, line);
+            hasVColor = true;
+            std::getline(file, line);
+            if (line.find("alpha") != std::string::npos) {
+                colorSize = 4;
+            }
+            else
+                continue;
+        }
+        else if (line.find("nx") != std::string::npos) {
+            std::cout << "has vNormal" << std::endl;
+            std::getline(file, line);
+            std::getline(file, line);
+            hasVNormal = true;
+        }
+        else if (line.find("element face") != std::string::npos) {
+            int loc = line.rfind(" ");
+            std::string fSizeStr = line.substr(loc + 1);
+            fSize = std::stoi(fSizeStr);
+            fs.resize(fSize);
+            //break;
+        }
+        std::getline(file, line);
+    }
+    //btm.setVertexs(vs);
+    if (hasVColor)
+        btm.enableVColors();
+    if (hasVNormal)
+        btm.enableVNormals();
+
+    int r, g, b;
+    int a;
+    unsigned char fvSize;
+    for (int i = 0; i < vSize; ++i) {
+		std::getline(file, line);
+		std::istringstream iss(line);
+		iss >> vs[i](0) >> vs[i](1) >> vs[i](2);
+        if (hasVNormal)
+        {
+            auto& vn = btm.getVNormal(i);
+            iss >> vn(0) >> vn(1) >> vn(2);
+            vn.normalize();
+        }
+		if (hasVColor)
+		{
+			iss >> r >> g >> b;
+			btm.setVColor(i, Eigen::Vector3f(r / 255.0f, g / 255.0f, b / 255.0f));
+			if (colorSize == 4) {
+				iss >> a; // 读取 alpha 通道
+			}
+		}
+    }
+    for (int i = 0; i < fSize; ++i) {
+		std::getline(file, line);
+		std::istringstream iss(line);
+		iss >> fvSize; // 读取面顶点数量
+		if (fvSize != '3') {
+			std::cerr << "Only triangular faces are supported in PLY: " << filename << std::endl;
+			return;
+		}
+        auto& f = fs[i];
+		for (int j = 0; j < 3; ++j) {
+			iss >> f.vId_[j];
+		}
+    }
+    //btm.setFaces(fs);
+
+    file.close();
+    return;
+}
+
+SLAM_LYJ_API void readPLYBin(const std::string& filename, BaseTriMesh& btm)
+{
+    btm.reset();
+    std::ifstream file(filename);
+    std::string line;
+    int vSize = 0;
+    int fSize = 0;
+    std::vector<Eigen::Vector3f>& vs = btm.getVertexs();
+    std::vector<BaseTriFace>& fs = btm.getFaces();
+    bool hasVColor = false;
+    bool hasVNormal = false;
+    int colorSize = 3;
+    if (!file.is_open())
+    {
+        std::cout << "open " << filename << " failed!" << std::endl;
+        return;
+    }
+    std::getline(file, line);
+    if (line != "ply")
+    {
+        std::cout << "Not a valid PLY file: " << filename << std::endl;
+        return;
+    }
+    std::getline(file, line);
+    if (line.find("format binary_little_endian") == std::string::npos)
+    {
+        std::cout << "can't read Binary PLY format: " << filename << std::endl;
+        if (line.find("format ascii") == std::string::npos)
+            return;
+        file.close();
+        std::cout << "try to read ASCII PLY." << std::endl;
+        return readPLY(filename, btm);
+    }
+    std::getline(file, line);
+    while (line.find("element vertex") == std::string::npos) {
+        std::getline(file, line);
+    }
+    int loc = line.rfind(" ");
+    std::string vSizeStr = line.substr(loc + 1);
+    vSize = std::stoi(vSizeStr);
+    vs.resize(vSize);
+
+    //xyz
+    std::getline(file, line);
+    std::getline(file, line);
+    std::getline(file, line);
+
+    std::getline(file, line);
+    while (line != "end_header") {
+        if (line.find("red") != std::string::npos)
+        {
+            std::cout << "has vColor" << std::endl;
+            std::getline(file, line);
+            std::getline(file, line);
+            hasVColor = true;
+            std::getline(file, line);
+            if (line.find("alpha") != std::string::npos) {
+                colorSize = 4;
+            }
+            else
+                continue;
+        }
+        else if (line.find("nx") != std::string::npos) {
+            std::cout << "has vNormal" << std::endl;
+            std::getline(file, line);
+            std::getline(file, line);
+            hasVNormal = true;
+        }
+        else if (line.find("element face") != std::string::npos) {
+            int loc = line.rfind(" ");
+            std::string fSizeStr = line.substr(loc + 1);
+            fSize = std::stoi(fSizeStr);
+            fs.resize(fSize);
+        }
+        std::getline(file, line);
+    }
+    if (hasVColor)
+        btm.enableVColors();
+    if (hasVNormal)
+        btm.enableVNormals();
+
+    unsigned char r, g, b;
+    unsigned char a;
+    unsigned char fvSize;
+    float x, y, z;
+    for (int i = 0; i < vSize; ++i) {
+        readBinary<float>(file, vs[i](0));
+        readBinary<float>(file, vs[i](1));
+        readBinary<float>(file, vs[i](2));
+        if (hasVNormal)
+        {
+            auto& vn = btm.getVNormal(i);
+            readBinary<float>(file, vn(0));
+            readBinary<float>(file, vn(1));
+            readBinary<float>(file, vn(2));
+            vn.normalize();
+        }
+        if (hasVColor)
+        {
+            readBinary<unsigned char>(file, r);
+            readBinary<unsigned char>(file, g);
+            readBinary<unsigned char>(file, b);
+            btm.setVColor(i, Eigen::Vector3f(r / 255.0f, g / 255.0f, b / 255.0f));
+            if (colorSize == 4) {
+                readBinary<unsigned char>(file, a);
+            }
+        }
+
+    }
+    
+    for (int i = 0; i < fSize; ++i) {
+        readBinary<unsigned char>(file, fvSize);
+        if (fvSize != 3) {
+            std::cerr << "Only triangular faces are supported in PLY: " << filename << std::endl;
+            return;
+        }
+        auto& f = fs[i];
+        for (int j = 0; j < 3; ++j) {
+            readBinary<unsigned int>(file, f.vId_[j]);
+        }
+    }
+
+    file.close();
+    return;
+}
+
+SLAM_LYJ_API void writePLYMesh(const std::string& filename, const BaseTriMesh& btm)
+{
+    try {
+        // 写入测试
+        PLYWriter writer;
+        writer.write(filename, btm);
+        std::cout << "文件已保存\n";
+    }
+    catch (const std::exception& e) {
+        std::cerr << "错误: " << e.what() << std::endl;
+        return;
+    }
+    return;
+}
+
+SLAM_LYJ_API void readPLYMesh(const std::string& filename, BaseTriMesh& btm)
+{
+    btm.reset();
+    try {
+        // 读取测试
+        PLYReader reader;
+        if (reader.read(filename, btm)) {
+            std::cout << "成功读取: "
+                << btm.getVn() << " vertices, "
+                << btm.getFn() << " faces\n";
+        }
+    }
+    catch (const std::exception& e) {
+        std::cerr << "错误: " << e.what() << std::endl;
+        return;
+    }
+    return;
+}
 
 NSP_SLAM_LYJ_END

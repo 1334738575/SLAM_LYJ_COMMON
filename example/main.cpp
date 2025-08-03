@@ -23,6 +23,13 @@
 
 #include <IO/MeshIO.h>
 
+
+#include <vector>
+#include <string>
+#include <stdexcept>
+#include <algorithm>
+#include <cstdint>
+
 void testDefine() {
 
     std::cout << SLAM_LYJ_HOME_PATH << std::endl;
@@ -215,11 +222,19 @@ int testOBJ() {
 
 
 int testPLY() {
+    SLAM_LYJ::SLAM_LYJ_MATH::BaseTriMesh btmIn;
+    SLAM_LYJ::readPLY("D:/tmp/res_mesh5.ply", btmIn);
+    SLAM_LYJ::writePLYBin("D:/tmp/copy2.ply", btmIn);
+    return 0;
 
     // 创建立方体顶点（边长2，中心在原点）
     std::vector<Eigen::Vector3f> vertices = {
         {-1, -1, -1}, {1, -1, -1}, {1, 1, -1}, {-1, 1, -1},
         {-1, -1, 1}, {1, -1, 1}, {1, 1, 1}, {-1, 1, 1}
+    };
+    std::vector<Eigen::Vector3f> vColors = {
+    {0, 0, 0}, {0, 0, 1}, {0, 1, 0}, {1, 0, 0},
+    {0, 1, 1}, {1, 0, 1}, {1, 1, 0}, {1, 1, 1}
     };
     // 创建立方体面（三角形）
     std::vector<SLAM_LYJ::SLAM_LYJ_MATH::BaseTriFace> faces = {
@@ -239,6 +254,8 @@ int testPLY() {
 
     SLAM_LYJ::SLAM_LYJ_MATH::BaseTriMesh btm;
     btm.setVertexs(vertices);
+    btm.enableVColors();
+    btm.setVColors(vColors);
     btm.setFaces(faces);
     SLAM_LYJ::writePLY("D:/tmp/cube.ply", btm);
     SLAM_LYJ::writePLYBin("D:/tmp/cubeBin.ply", btm);
@@ -266,11 +283,24 @@ void testIO() {
 }
 
 
+
+
+
+// 示例用法
+int main2() {
+    SLAM_LYJ::BaseTriMesh btm;
+    SLAM_LYJ::readPLYMesh("D:/tmp/copy3.ply", btm);
+    SLAM_LYJ::writePLYMesh("D:/tmp/copy3.ply", btm);
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     std::cout << "Hello COMMON_LYJ" << std::endl;
-    adjustPose();
+    //adjustPose();
     //testPLY();
+    main2();
     //testIO();
     //testOBJ();
     return 0;

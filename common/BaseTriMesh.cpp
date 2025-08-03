@@ -153,6 +153,27 @@ bool BaseTriMesh::calculateVNormals()
 	return true;
 }
 
+const int BaseTriMesh::getFn() const
+{
+	return m_faces.size();
+}
+
+void BaseTriMesh::reset()
+{
+	m_vertexs.clear();
+	m_faces.clear();
+	m_enableVNr = false;
+	m_vNormals.clear();
+	m_enableVClr = false;
+	m_vColors.clear();
+	m_enableFNr = false;
+	m_fNormals.clear();
+	m_hasFCtr = false;
+	m_centers.clear();
+	m_hasTexture = false;
+	m_textureCoords.clear();
+}
+
 
 
 

@@ -18,12 +18,14 @@ public:
 	std::vector<Eigen::Vector3f>& getVertexs();
 	const std::vector<Eigen::Vector3f>& getVertexs() const;
 	const Eigen::Vector3f& getVertex(uint32_t _id) const;
+	const int getVn() const;
 
 	void enableVNormals();
 	void disableVNormals();
 	bool isEnableVNormals() const;
 	std::vector<Eigen::Vector3f>& getVNormals();
 	const std::vector<Eigen::Vector3f>& getVNormals() const;
+	Eigen::Vector3f& getVNormal(uint32_t _id);
 	const Eigen::Vector3f& getVNormal(uint32_t _id) const;
 	bool setVNormals(const std::vector<Eigen::Vector3f>& _vNormals);
 	bool setVNormal(uint32_t _id, const Eigen::Vector3f& _vNormal);
@@ -36,6 +38,8 @@ public:
 	const Eigen::Vector3f& getVColor(uint32_t _id) const;
 	bool setVColors(const std::vector<Eigen::Vector3f>& _vColors);
 	bool setVColor(uint32_t _id, const Eigen::Vector3f& _vColor);
+
+	virtual void reset();
 
 protected:
 	std::vector<Eigen::Vector3f> m_vertexs;
@@ -72,6 +76,11 @@ inline const Eigen::Vector3f& Cloud::getVertex(uint32_t _id) const
 	return m_vertexs[_id];
 }
 
+inline const int Cloud::getVn() const
+{
+	return m_vertexs.size();
+}
+
 inline bool Cloud::isEnableVNormals() const
 {
 	return m_enableVNr;
@@ -85,6 +94,11 @@ inline std::vector<Eigen::Vector3f>& Cloud::getVNormals()
 inline const std::vector<Eigen::Vector3f>& Cloud::getVNormals() const
 {
 	return m_vNormals;
+}
+
+inline Eigen::Vector3f& Cloud::getVNormal(uint32_t _id)
+{
+	return m_vNormals[_id];
 }
 
 inline const Eigen::Vector3f& Cloud::getVNormal(uint32_t _id) const

@@ -8,6 +8,11 @@ NSP_SLAM_LYJ_MATH_BEGIN
 
 struct SLAM_LYJ_API BaseTriFace
 {
+	BaseTriFace() {
+		vId_[0] = -1;
+		vId_[1] = -1;
+		vId_[2] = -1;
+	}
 	BaseTriFace(uint32_t _v1, uint32_t _v2, uint32_t _v3)
 	{
 		vId_[0] = _v1;
@@ -48,6 +53,10 @@ public:
 	const Eigen::Vector3f& getFCenter(uint32_t _id) const;
 	void calculateFCenters();
 	bool calculateVNormals();
+	const int getFn() const;
+
+	//inherited from Cloud
+	virtual void reset();
 
 private:
 	std::vector<BaseTriFace> m_faces;

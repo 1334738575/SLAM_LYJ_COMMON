@@ -90,6 +90,15 @@ bool Cloud::setVColor(uint32_t _id, const Eigen::Vector3f& _vColor)
 	return true;
 }
 
+void Cloud::reset()
+{
+	m_vertexs.clear();
+	m_enableVNr = false;
+	m_vNormals.clear();
+	m_enableVClr = false;
+	m_vColors.clear();
+}
+
 
 
 
