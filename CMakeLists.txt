@@ -192,6 +192,10 @@ install(DIRECTORY ./
     PATTERN "cmake" EXCLUDE # 排除所有名为 cmake 的目录及内容
     PATTERN "install" EXCLUDE # 排除所有名为 install 的目录及内容
     PATTERN "Lib" EXCLUDE # 排除所有名为 Lib 的目录及内容
+    PATTERN ".git" EXCLUDE # 排除所有名为 Lib 的目录及内容
+    PATTERN ".vscode" EXCLUDE # 排除所有名为 Lib 的目录及内容
+    PATTERN "example" EXCLUDE # 排除所有名为 Lib 的目录及内容
+    PATTERN "Output" EXCLUDE # 排除所有名为 Lib 的目录及内容
 
     # 或使用正则表达式精确匹配路径（更严格）
     # PATTERN "/(build|cmake|install|Lib)(/.*)?$" EXCLUDE
