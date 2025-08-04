@@ -110,7 +110,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
-    ${PROJECT_NAME}_INCLUDE_DIRS}
+    ${${PROJECT_NAME}_INCLUDE_DIRS}
 )
 target_link_libraries(${PROJECT_NAME} PUBLIC
     ${${PROJECT_NAME}_LIBRARIES}
