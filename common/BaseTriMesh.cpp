@@ -2,13 +2,14 @@
 
 NSP_SLAM_LYJ_MATH_BEGIN
 
-
 BaseTriMesh::BaseTriMesh()
-{}
+{
+}
 BaseTriMesh::~BaseTriMesh()
-{}
+{
+}
 
-std::vector<Eigen::Vector3f>& BaseTriMesh::getFNormals()
+std::vector<Eigen::Vector3f> &BaseTriMesh::getFNormals()
 {
 	// TODO: 在此处插入 return 语句
 	if (!m_enableFNr)
@@ -16,7 +17,7 @@ std::vector<Eigen::Vector3f>& BaseTriMesh::getFNormals()
 	return m_fNormals;
 }
 
-const std::vector<Eigen::Vector3f>& BaseTriMesh::getFNormals() const
+const std::vector<Eigen::Vector3f> &BaseTriMesh::getFNormals() const
 {
 	// TODO: 在此处插入 return 语句
 	if (!m_enableFNr)
@@ -24,7 +25,7 @@ const std::vector<Eigen::Vector3f>& BaseTriMesh::getFNormals() const
 	return m_fNormals;
 }
 
-const Eigen::Vector3f& BaseTriMesh::getFNormal(uint32_t _id) const
+const Eigen::Vector3f &BaseTriMesh::getFNormal(uint32_t _id) const
 {
 	// TODO: 在此处插入 return 语句
 	if (!m_enableFNr)
@@ -32,9 +33,10 @@ const Eigen::Vector3f& BaseTriMesh::getFNormal(uint32_t _id) const
 	return m_fNormals[_id];
 }
 
-bool BaseTriMesh::setFNormals(const std::vector<Eigen::Vector3f>& _fNormals)
+bool BaseTriMesh::setFNormals(const std::vector<Eigen::Vector3f> &_fNormals)
 {
-	if (!m_enableFNr) {
+	if (!m_enableFNr)
+	{
 		std::cout << "face normal is disable." << std::endl;
 		return false;
 	}
@@ -42,9 +44,10 @@ bool BaseTriMesh::setFNormals(const std::vector<Eigen::Vector3f>& _fNormals)
 	return true;
 }
 
-bool BaseTriMesh::setFNormal(uint32_t _id, const Eigen::Vector3f& _fNormal)
+bool BaseTriMesh::setFNormal(uint32_t _id, const Eigen::Vector3f &_fNormal)
 {
-	if (!m_enableFNr) {
+	if (!m_enableFNr)
+	{
 		std::cout << "face normal is disable." << std::endl;
 		return false;
 	}
@@ -64,47 +67,52 @@ void BaseTriMesh::calculateFNormals()
 		e1 = m_vertexs[m_faces[i].vId_[1]] - m_vertexs[m_faces[i].vId_[0]];
 		e2 = m_vertexs[m_faces[i].vId_[2]] - m_vertexs[m_faces[i].vId_[0]];
 		m_fNormals[i] = e1.cross(e2);
-		m_fNormals[i].normalize();
+		if (!m_fNormals[i].isZero())
+			m_fNormals[i].normalize();
 	}
 }
 
-void BaseTriMesh::setFCenters(const std::vector<Eigen::Vector3f>& _fCenters)
+void BaseTriMesh::setFCenters(const std::vector<Eigen::Vector3f> &_fCenters)
 {
-	if (!m_hasFCtr) {
+	if (!m_hasFCtr)
+	{
 		std::cout << "face center is disable." << std::endl;
 		return;
 	}
 	m_centers = _fCenters;
 }
 
-void BaseTriMesh::setFCenter(uint32_t _id, const Eigen::Vector3f& _fCenter)
+void BaseTriMesh::setFCenter(uint32_t _id, const Eigen::Vector3f &_fCenter)
 {
-	if (!m_hasFCtr) {
+	if (!m_hasFCtr)
+	{
 		std::cout << "face center is disable." << std::endl;
 		return;
 	}
 	m_centers[_id] = _fCenter;
 }
 
-std::vector<Eigen::Vector3f>& BaseTriMesh::getFCenters()
+std::vector<Eigen::Vector3f> &BaseTriMesh::getFCenters()
 {
 	// TODO: 在此处插入 return 语句
-	if (!m_hasFCtr) {
+	if (!m_hasFCtr)
+	{
 		std::cout << "face center is disable." << std::endl;
 	}
 	return m_centers;
 }
 
-const std::vector<Eigen::Vector3f>& BaseTriMesh::getFCenters() const
+const std::vector<Eigen::Vector3f> &BaseTriMesh::getFCenters() const
 {
 	// TODO: 在此处插入 return 语句
-	if (!m_hasFCtr) {
+	if (!m_hasFCtr)
+	{
 		std::cout << "face center is disable." << std::endl;
 	}
 	return m_centers;
 }
 
-const Eigen::Vector3f& BaseTriMesh::getFCenter(uint32_t _id) const
+const Eigen::Vector3f &BaseTriMesh::getFCenter(uint32_t _id) const
 {
 	// TODO: 在此处插入 return 语句
 	if (!m_hasFCtr)
@@ -114,15 +122,18 @@ const Eigen::Vector3f& BaseTriMesh::getFCenter(uint32_t _id) const
 
 void BaseTriMesh::calculateFCenters()
 {
-	if (!m_hasFCtr) {
+	if (!m_hasFCtr)
+	{
 		std::cout << "face center is disable." << std::endl;
 		return;
 	}
 	uint32_t fSize = m_faces.size();
 	m_centers.resize(fSize);
-	for (int i = 0; i < fSize; ++i) {
+	for (int i = 0; i < fSize; ++i)
+	{
 		m_centers[i].setZero();
-		for (int j = 0; j < 3; ++j) {
+		for (int j = 0; j < 3; ++j)
+		{
 			m_centers[i] += m_vertexs[m_faces[i].vId_[j]];
 		}
 		m_centers[i] /= 3;
@@ -139,14 +150,17 @@ bool BaseTriMesh::calculateVNormals()
 	m_vNormals.resize(vSize);
 	memset(m_vNormals[0].data(), 0, vSize * 3 * sizeof(float));
 	std::vector<int> cnts(vSize, 0);
-	for (int i = 0; i < fSize; ++i) {
-		for (int j = 0; j < 3; ++j) {
+	for (int i = 0; i < fSize; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
 			m_vNormals[m_faces[i].vId_[j]] += m_fNormals[i];
 			++cnts[m_faces[i].vId_[j]];
 		}
 	}
 	for (size_t i = 0; i < vSize; ++i)
-		if (cnts[i]) {
+		if (cnts[i])
+		{
 			m_vNormals[i] /= cnts[i];
 			m_vNormals[i].normalize();
 		}
@@ -173,9 +187,5 @@ void BaseTriMesh::reset()
 	m_hasTexture = false;
 	m_textureCoords.clear();
 }
-
-
-
-
 
 NSP_SLAM_LYJ_MATH_END
