@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.20)
 # ################################setting##################################
 # cmake setting
 project(COMMON_LYJ)
+if(TARGET COMMON_LYJ)
+    message(STATUS "目标 COMMON_LYJ 已存在")
+    return()
+endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE "Release")
 

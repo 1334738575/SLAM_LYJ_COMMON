@@ -1,7 +1,7 @@
 #ifndef SLAM_LYJ_PREDEFINE_H
 #define SLAM_LYJ_PREDEFINE_H
 
-//lyj
+// lyj
 #include "Base.h"
 #include "common/Point.h"
 #include "common/Line.h"
@@ -14,7 +14,7 @@
 #include "common/Grid.h"
 #include "Pose.h"
 #include "CameraModule.h"
-#include "config.h"
+#include "config/config.h"
 
 NSP_SLAM_LYJ_BEGIN
 
@@ -31,16 +31,17 @@ public:
 	GlobalInnerOption() {}
 	~GlobalInnerOption() {}
 
-	static GlobalInnerOption* get() { return &opt_; }
+	static GlobalInnerOption *get()
+	{
+		static GlobalInnerOption opt;
+		return &opt;
+	}
 
 private:
-	static GlobalInnerOption opt_;
 };
-
 
 NSP_SLAM_LYJ_END
 
 #define LYJOPT SLAM_LYJ::GlobalInnerOption::get()
-
 
 #endif
