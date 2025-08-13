@@ -85,11 +85,11 @@ namespace COMMON_LYJ
         clrsTmp.push_back(Eigen::Vector3f(1, 1, 1));
         for (int i = 0; i < num; ++i)
         {
-            psTmp.push_back(P1.cast<float>() * i);
+            psTmp.push_back(P1.cast<float>() + (P1.cast<float>() - P0.cast<float>()) * i);
+            psTmp.push_back(P2.cast<float>() + (P2.cast<float>() - P0.cast<float>()) * i);
+            psTmp.push_back(P3.cast<float>() + (P3.cast<float>() - P0.cast<float>()) * i);
             clrsTmp.push_back(Eigen::Vector3f(1, 0, 0));
-            psTmp.push_back(P2.cast<float>() * i);
             clrsTmp.push_back(Eigen::Vector3f(0, 1, 0));
-            psTmp.push_back(P3.cast<float>() * i);
             clrsTmp.push_back(Eigen::Vector3f(0, 0, 1));
         }
         btmTmp.setVertexs(psTmp);
