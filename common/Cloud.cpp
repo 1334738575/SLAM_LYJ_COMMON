@@ -3,11 +3,13 @@
 NSP_SLAM_LYJ_MATH_BEGIN
 
 Cloud::Cloud()
-{}
+{
+}
 Cloud::~Cloud()
-{}
+{
+}
 
-void Cloud::addVertex(const Eigen::Vector3f& _vertex)
+void Cloud::addVertex(const Eigen::Vector3f &_vertex)
 {
 	m_vertexs.push_back(_vertex);
 	if (m_enableVNr)
@@ -17,7 +19,7 @@ void Cloud::addVertex(const Eigen::Vector3f& _vertex)
 void Cloud::enableVNormals()
 {
 	m_enableVNr = true;
-	m_vNormals.assign(m_vertexs.size(), Eigen::Vector3f(0,0,0));
+	m_vNormals.assign(m_vertexs.size(), Eigen::Vector3f(0, 0, 0));
 }
 
 void Cloud::disableVNormals()
@@ -26,7 +28,7 @@ void Cloud::disableVNormals()
 	m_vNormals.swap(std::vector<Eigen::Vector3f>());
 }
 
-bool Cloud::setVNormals(const std::vector<Eigen::Vector3f>& _vNormals)
+bool Cloud::setVNormals(const std::vector<Eigen::Vector3f> &_vNormals)
 {
 	if (!m_enableVNr)
 		return false;
@@ -34,7 +36,7 @@ bool Cloud::setVNormals(const std::vector<Eigen::Vector3f>& _vNormals)
 	return true;
 }
 
-bool Cloud::setVNormal(uint32_t _id, const Eigen::Vector3f& _vNormal)
+bool Cloud::setVNormal(uint32_t _id, const Eigen::Vector3f &_vNormal)
 {
 	if (!m_enableVNr)
 		return false;
@@ -59,22 +61,22 @@ bool Cloud::isEnableVColors() const
 	return m_enableVClr;
 }
 
-std::vector<Eigen::Vector3f>& Cloud::getVColors()
+std::vector<Eigen::Vector3f> &Cloud::getVColors()
 {
 	return m_vColors;
 }
 
-const std::vector<Eigen::Vector3f>& Cloud::getVColors() const
+const std::vector<Eigen::Vector3f> &Cloud::getVColors() const
 {
 	return m_vColors;
 }
 
-const Eigen::Vector3f& Cloud::getVColor(uint32_t _id) const
+const Eigen::Vector3f &Cloud::getVColor(uint32_t _id) const
 {
 	return m_vColors[_id];
 }
 
-bool Cloud::setVColors(const std::vector<Eigen::Vector3f>& _vColors)
+bool Cloud::setVColors(const std::vector<Eigen::Vector3f> &_vColors)
 {
 	if (!m_enableVClr)
 		return false;
@@ -82,7 +84,7 @@ bool Cloud::setVColors(const std::vector<Eigen::Vector3f>& _vColors)
 	return true;
 }
 
-bool Cloud::setVColor(uint32_t _id, const Eigen::Vector3f& _vColor)
+bool Cloud::setVColor(uint32_t _id, const Eigen::Vector3f &_vColor)
 {
 	if (!m_enableVClr)
 		return false;
@@ -99,7 +101,14 @@ void Cloud::reset()
 	m_vColors.clear();
 }
 
-
-
+void Cloud::tranform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t)
+{
+	for (int i = 0; i < getVn(); ++i)
+	{
+		m_vertexs[i] = (_R * m_vertexs[i].cast<double>() + _t).cast<float>();
+		if (isEnableVNormals())
+			m_vNormals = (_R * m_vNormals[i].cast<double>()).cast<float>();
+	}
+}
 
 NSP_SLAM_LYJ_MATH_END

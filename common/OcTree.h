@@ -24,6 +24,8 @@ public:
 
 	struct Node
 	{
+		Node() {}
+		Node(int _curDepth) { curDepth = _curDepth; }
 		Vector3 c;
 		bool isLeaf = false;
 		Node *lfu = nullptr;
@@ -43,26 +45,27 @@ public:
 		Vector3 rfdP;
 		Vector3 rbdP;
 		Vector3 lbdP;
+		int curDepth = -1;
 
 		Node()
 		{
 		}
-		Node(const std::vector<Vector3>& _vs, const std::vector<int>& _ids,
-			const Vector3& _lbd, const Vector3& _rfu)
-			:ids(_ids), lbdP(_lbd), rfuP(_rfu)
+		Node(const std::vector<Vector3> &_vs, const std::vector<int> &_ids,
+			 const Vector3 &_lbd, const Vector3 &_rfu)
+			: ids(_ids), lbdP(_lbd), rfuP(_rfu)
 		{
 			devide(_vs);
 		}
 
 		void build(const std::vector<Vector3> &_vs, const std::vector<int> &_ids,
-				   const Vector3 &_lbd, const Vector3 &_rfu)
+				   const Vector3 &_lbd, const Vector3 &_rfu, int _maxDepth = 10)
 		{
-			if (_vs.empty() || _ids.empty())
+			if (_vs.empty() || _ids.empty() || curDepth > _maxDepth)
 				return;
 			c = (_lbd + _rfu) / 2;
 			// ids = _ids;
 			int len = _ids.size();
-			if (len == 1)
+			if (len == 1 || curDepth == _maxDepth)
 			{
 				isLeaf = true;
 				ids = _ids;
@@ -103,49 +106,50 @@ public:
 				else if (_vs[_ids[i]](0) <= c(0) && _vs[_ids[i]](1) <= c(1) && _vs[_ids[i]](2) <= c(2))
 					lbdVs.push_back(_ids[i]);
 			}
+			int nextDepth = curDepth + 1;
 			if (!lfuVs.empty())
 			{
-				lfu = new Node();
-				lfu->build(_vs, lfuVs, Vector3(_lbd(0), c(1), c(2)), Vector3(c(0), _rfu(1), _rfu(2)));
+				lfu = new Node(nextDepth);
+				lfu->build(_vs, lfuVs, Vector3(_lbd(0), c(1), c(2)), Vector3(c(0), _rfu(1), _rfu(2)), _maxDepth);
 			}
 			if (!rfuVs.empty())
 			{
-				rfu = new Node();
-				rfu->build(_vs, rfuVs, c, _rfu);
+				rfu = new Node(nextDepth);
+				rfu->build(_vs, rfuVs, c, _rfu, _maxDepth);
 			}
 			if (!rbuVs.empty())
 			{
-				rbu = new Node();
-				rbu->build(_vs, rbuVs, Vector3(c(0), _lbd(1), c(2)), Vector3(_rfu(0), c(1), _rfu(2)));
+				rbu = new Node(nextDepth);
+				rbu->build(_vs, rbuVs, Vector3(c(0), _lbd(1), c(2)), Vector3(_rfu(0), c(1), _rfu(2)), _maxDepth);
 			}
 			if (!lbuVs.empty())
 			{
-				lbu = new Node();
-				lbu->build(_vs, lbuVs, Vector3(_lbd(0), _lbd(1), c(2)), Vector3(c(0), c(1), _rfu(2)));
+				lbu = new Node(nextDepth);
+				lbu->build(_vs, lbuVs, Vector3(_lbd(0), _lbd(1), c(2)), Vector3(c(0), c(1), _rfu(2)), _maxDepth);
 			}
 			if (!lfdVs.empty())
 			{
-				lfd = new Node();
-				lfd->build(_vs, lfdVs, Vector3(_lbd(0), c(1), _lbd(2)), Vector3(c(0), _rfu(1), c(2)));
+				lfd = new Node(nextDepth);
+				lfd->build(_vs, lfdVs, Vector3(_lbd(0), c(1), _lbd(2)), Vector3(c(0), _rfu(1), c(2)), _maxDepth);
 			}
 			if (!rfdVs.empty())
 			{
-				rfd = new Node();
-				rfd->build(_vs, rfdVs, Vector3(c(0), c(1), _lbd(2)), Vector3(_rfu(0), _rfu(1), c(2)));
+				rfd = new Node(nextDepth);
+				rfd->build(_vs, rfdVs, Vector3(c(0), c(1), _lbd(2)), Vector3(_rfu(0), _rfu(1), c(2)), _maxDepth);
 			}
 			if (!rbdVs.empty())
 			{
-				rbd = new Node();
-				rbd->build(_vs, rbdVs, Vector3(c(0), _lbd(1), _lbd(2)), Vector3(_rfu(0), c(1), c(2)));
+				rbd = new Node(nextDepth);
+				rbd->build(_vs, rbdVs, Vector3(c(0), _lbd(1), _lbd(2)), Vector3(_rfu(0), c(1), c(2)), _maxDepth);
 			}
 			if (!lbdVs.empty())
 			{
-				lbd = new Node();
-				lbd->build(_vs, lbdVs, _lbd, c);
+				lbd = new Node(nextDepth);
+				lbd->build(_vs, lbdVs, _lbd, c, _maxDepth);
 			}
-		}		
-		
-		void devide(const std::vector<Vector3>& _vs)
+		}
+
+		void devide(const std::vector<Vector3> &_vs)
 		{
 			if (_vs.empty() || ids.empty())
 				return;
@@ -208,7 +212,7 @@ public:
 			if (!lbdVs.empty())
 				lbd = new Node(lbdVs, _lbd, c);
 		}
-		bool getSubNodes(std::vector<Node*>& _nodes)
+		bool getSubNodes(std::vector<Node *> &_nodes)
 		{
 			if (ids.size() <= 1)
 				return false;
@@ -366,7 +370,7 @@ public:
 	OcTree() {};
 	~OcTree() {};
 
-	void build(const std::vector<Vector3> &_vs)
+	void build(const std::vector<Vector3> &_vs, int _maxDepth = 10)
 	{
 		if (root)
 		{
@@ -398,13 +402,13 @@ public:
 				rfu(2) = _vs[i](2);
 		}
 		root = new Node();
-		root->build(_vs, ids, lbd, rfu);
+		root->build(_vs, ids, lbd, rfu, _maxDepth);
 	}
-	void build2(const std::vector<Vector3>& _vs)
+	void build2(const std::vector<Vector3> &_vs)
 	{
 		if (nodes.size())
 		{
-			for(int i=0;i<nodes.size();++i)
+			for (int i = 0; i < nodes.size(); ++i)
 				nodes[i]->release();
 			delete nodes[0];
 			nodes.clear();
@@ -432,16 +436,18 @@ public:
 			else if (rfu(2) < _vs[i](2))
 				rfu(2) = _vs[i](2);
 		}
-		Node* nodeRoot = new Node(_vs, ids, lbd, rfu);
-		std::vector<Node*> nodesCurrent;
+		Node *nodeRoot = new Node(_vs, ids, lbd, rfu);
+		std::vector<Node *> nodesCurrent;
 		nodesCurrent.push_back(nodeRoot);
 		nodes.push_back(nodeRoot);
-		std::vector<Node*> nodesNext;
-		//bool needDevide = true;
-		while (!nodesCurrent.empty()) {
+		std::vector<Node *> nodesNext;
+		// bool needDevide = true;
+		while (!nodesCurrent.empty())
+		{
 			nodesNext.clear();
-			//needDevide = false;
-			for (int i = 0; i < nodesCurrent.size(); ++i) {
+			// needDevide = false;
+			for (int i = 0; i < nodesCurrent.size(); ++i)
+			{
 				nodesCurrent[i]->getSubNodes(nodesNext);
 			}
 			nodesCurrent = nodesNext;
@@ -510,8 +516,8 @@ public:
 
 private:
 	std::vector<Vector3> vs;
-	Node* root = nullptr;
-	std::vector<Node*> nodes;
+	Node *root = nullptr;
+	std::vector<Node *> nodes;
 };
 
 using OcTreed = OcTree<double>;
