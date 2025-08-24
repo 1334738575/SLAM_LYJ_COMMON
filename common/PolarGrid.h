@@ -13,7 +13,7 @@
 
 NSP_SLAM_LYJ_MATH_BEGIN
 /// <summary>
-/// 极坐标网格，内部会默认扩展一步长
+/// 极坐标网格，内部会默认扩展一步长，以y轴为中心
 /// </summary>
 /// <typeparam name="T"></typeparam>
 template <typename T>

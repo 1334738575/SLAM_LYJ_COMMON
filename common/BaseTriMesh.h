@@ -5,10 +5,10 @@
 
 NSP_SLAM_LYJ_MATH_BEGIN
 
-
 struct SLAM_LYJ_API BaseTriFace
 {
-	BaseTriFace() {
+	BaseTriFace()
+	{
 		vId_[0] = -1;
 		vId_[1] = -1;
 		vId_[2] = -1;
@@ -28,35 +28,36 @@ public:
 	BaseTriMesh();
 	~BaseTriMesh();
 
-	void setFaces(const std::vector<BaseTriFace>& _faces);
-	void setFace(uint32_t _id, const BaseTriFace& _face);
-	void addFace(const BaseTriFace& _face);
-	std::vector<BaseTriFace>& getFaces();
-	const std::vector<BaseTriFace>& getFaces() const;
-	const BaseTriFace& getFace(uint32_t _id);
+	void setFaces(const std::vector<BaseTriFace> &_faces);
+	void setFace(uint32_t _id, const BaseTriFace &_face);
+	void addFace(const BaseTriFace &_face);
+	std::vector<BaseTriFace> &getFaces();
+	const std::vector<BaseTriFace> &getFaces() const;
+	const BaseTriFace &getFace(uint32_t _id);
 	void enableFNormals();
 	void disableFNormals();
 	bool isEnableFNormals() const;
-	std::vector<Eigen::Vector3f>& getFNormals();
-	const std::vector<Eigen::Vector3f>& getFNormals() const;
-	const Eigen::Vector3f& getFNormal(uint32_t _id) const;
-	bool setFNormals(const std::vector<Eigen::Vector3f>& _fNormals);
-	bool setFNormal(uint32_t _id, const Eigen::Vector3f& _fNormal);
+	std::vector<Eigen::Vector3f> &getFNormals();
+	const std::vector<Eigen::Vector3f> &getFNormals() const;
+	const Eigen::Vector3f &getFNormal(uint32_t _id) const;
+	bool setFNormals(const std::vector<Eigen::Vector3f> &_fNormals);
+	bool setFNormal(uint32_t _id, const Eigen::Vector3f &_fNormal);
 	void calculateFNormals();
 	void enableFCenters();
 	void disableFCenters();
 	bool hasFCenters() const;
-	void setFCenters(const std::vector<Eigen::Vector3f>& _fCenters);
-	void setFCenter(uint32_t _id, const Eigen::Vector3f& _fCenter);
-	std::vector<Eigen::Vector3f>& getFCenters();
-	const std::vector<Eigen::Vector3f>& getFCenters() const;
-	const Eigen::Vector3f& getFCenter(uint32_t _id) const;
+	void setFCenters(const std::vector<Eigen::Vector3f> &_fCenters);
+	void setFCenter(uint32_t _id, const Eigen::Vector3f &_fCenter);
+	std::vector<Eigen::Vector3f> &getFCenters();
+	const std::vector<Eigen::Vector3f> &getFCenters() const;
+	const Eigen::Vector3f &getFCenter(uint32_t _id) const;
 	void calculateFCenters();
 	bool calculateVNormals();
 	const int getFn() const;
 
-	//inherited from Cloud
+	// inherited from Cloud
 	virtual void reset();
+	virtual void tranform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t);
 
 private:
 	std::vector<BaseTriFace> m_faces;
@@ -67,41 +68,40 @@ private:
 
 	bool m_hasTexture = false;
 	std::vector<Eigen::Vector2f> m_textureCoords;
-	//TODO 纹理对象
+	// TODO 纹理对象
 };
 
-
-inline void BaseTriMesh::setFaces(const std::vector<BaseTriFace>& _faces)
+inline void BaseTriMesh::setFaces(const std::vector<BaseTriFace> &_faces)
 {
 	m_faces = _faces;
 }
 
-inline void BaseTriMesh::setFace(uint32_t _id, const BaseTriFace& _face)
+inline void BaseTriMesh::setFace(uint32_t _id, const BaseTriFace &_face)
 {
 	m_faces[_id] = _face;
 }
 
-inline void BaseTriMesh::addFace(const BaseTriFace& _face)
+inline void BaseTriMesh::addFace(const BaseTriFace &_face)
 {
 	m_faces.push_back(_face);
-	//if (m_enableFNr) {
+	// if (m_enableFNr) {
 	//	m_fNormals.resize(m_faces.size());
-	//}
+	// }
 }
 
-inline std::vector<BaseTriFace>& BaseTriMesh::getFaces()
+inline std::vector<BaseTriFace> &BaseTriMesh::getFaces()
 {
 	// TODO: 在此处插入 return 语句
 	return m_faces;
 }
 
-inline const std::vector<BaseTriFace>& BaseTriMesh::getFaces() const
+inline const std::vector<BaseTriFace> &BaseTriMesh::getFaces() const
 {
 	// TODO: 在此处插入 return 语句
 	return m_faces;
 }
 
-inline const BaseTriFace& BaseTriMesh::getFace(uint32_t _id)
+inline const BaseTriFace &BaseTriMesh::getFace(uint32_t _id)
 {
 	// TODO: 在此处插入 return 语句
 	return m_faces[_id];
@@ -142,8 +142,6 @@ inline bool BaseTriMesh::hasFCenters() const
 {
 	return m_hasFCtr;
 }
-
-
 
 NSP_SLAM_LYJ_MATH_END
 

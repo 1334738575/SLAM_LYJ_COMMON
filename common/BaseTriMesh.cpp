@@ -161,7 +161,7 @@ bool BaseTriMesh::calculateVNormals()
 	for (size_t i = 0; i < vSize; ++i)
 		if (cnts[i])
 		{
-			m_vNormals[i] /= cnts[i];
+			// m_vNormals[i] /= cnts[i];
 			m_vNormals[i].normalize();
 		}
 	return true;
@@ -186,6 +186,18 @@ void BaseTriMesh::reset()
 	m_centers.clear();
 	m_hasTexture = false;
 	m_textureCoords.clear();
+}
+
+void BaseTriMesh::tranform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t)
+{
+	if (isEnableFNormals())
+	{
+		for (int i = 0; i < getFn(); ++i)
+		{
+			m_fNormals = (_R * m_fNormals[i].cast<double>()).cast<float>();
+		}
+	}
+	Cloud::tranform(_R, _t);
 }
 
 NSP_SLAM_LYJ_MATH_END

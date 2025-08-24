@@ -34,10 +34,10 @@ namespace COMMON_LYJ
     }
     bool drawCam(const std::string &_file, const SLAM_LYJ::PinholeCmera &_cam, const SLAM_LYJ::Pose3D &_Twc, const double _depth)
     {
-        Eigen::Vector3d p1(0, 0, 10);
-        Eigen::Vector3d p2(_cam.wide(), 0, 10);
-        Eigen::Vector3d p3(_cam.wide(), _cam.height(), 10);
-        Eigen::Vector3d p4(0, _cam.height(), 10);
+        Eigen::Vector3d p1(0, 0, _depth);
+        Eigen::Vector3d p2(_cam.wide(), 0, _depth);
+        Eigen::Vector3d p3(_cam.wide(), _cam.height(), _depth);
+        Eigen::Vector3d p4(0, _cam.height(), _depth);
         Eigen::Vector3d P0(0, 0, 0);
         Eigen::Vector3d P1;
         Eigen::Vector3d P2;
@@ -66,6 +66,37 @@ namespace COMMON_LYJ
         fsTmp.emplace_back(0, 4, 1);
         btmTmp.setVertexs(psTmp);
         btmTmp.setFaces(fsTmp);
+        SLAM_LYJ::writePLYMesh(_file, btmTmp);
+        return true;
+    }
+    bool drawCoordinateSystem(const std::string &_file, const SLAM_LYJ::Pose3D &_Twc, const double _step)
+    {
+        int num = 5;
+        Eigen::Vector3d P0(0, 0, 0);
+        Eigen::Vector3d P1(_step, 0, 0);
+        Eigen::Vector3d P2(0, _step, 0);
+        Eigen::Vector3d P3(0, 0, _step);
+        P0 = _Twc * P0;
+        P1 = _Twc * P1;
+        P2 = _Twc * P2;
+        P3 = _Twc * P3;
+        SLAM_LYJ::SLAM_LYJ_MATH::BaseTriMesh btmTmp;
+        std::vector<Eigen::Vector3f> psTmp;
+        std::vector<Eigen::Vector3f> clrsTmp;
+        psTmp.push_back(P0.cast<float>());
+        clrsTmp.push_back(Eigen::Vector3f(1, 1, 1));
+        for (int i = 0; i < num; ++i)
+        {
+            psTmp.push_back(P1.cast<float>() + (P1.cast<float>() - P0.cast<float>()) * i);
+            psTmp.push_back(P2.cast<float>() + (P2.cast<float>() - P0.cast<float>()) * i);
+            psTmp.push_back(P3.cast<float>() + (P3.cast<float>() - P0.cast<float>()) * i);
+            clrsTmp.push_back(Eigen::Vector3f(1, 0, 0));
+            clrsTmp.push_back(Eigen::Vector3f(0, 1, 0));
+            clrsTmp.push_back(Eigen::Vector3f(0, 0, 1));
+        }
+        btmTmp.setVertexs(psTmp);
+        btmTmp.enableVColors();
+        btmTmp.setVColors(clrsTmp);
         SLAM_LYJ::writePLYMesh(_file, btmTmp);
         return true;
     }

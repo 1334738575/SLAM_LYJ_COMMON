@@ -21,6 +21,8 @@ protected:
 public:
     CameraModule(const CameraType _type, const std::vector<double> &_params)
         : type(_type), params(_params) {}
+    CameraModule(const CameraType _type)
+        : type(_type) {}
     ~CameraModule() {}
 
     // ŒÔ¿ÌµΩÕºœÒ
@@ -62,7 +64,15 @@ class PinholeCmera : public CameraModule
 {
 public:
     PinholeCmera()
-        : CameraModule(CameraType::PINHOLE, std::vector<double>(6, 0)) {}
+        : CameraModule(CameraType::PINHOLE)
+    {
+        params.assign(6, 0);
+    }
+    PinholeCmera(double _w, double _h, double _fx, double _fy, double _cx, double _cy)
+        : CameraModule(CameraType::PINHOLE)
+    {
+        params = std::vector<double>{_w, _h, _fx, _fy, _cx, _cy};
+    }
     PinholeCmera(const std::vector<double> &_params)
         : CameraModule(CameraType::PINHOLE, _params)
     {
@@ -138,6 +148,23 @@ public:
         return params[4];
     }
     const double &cy() const
+    {
+        return params[5];
+    }
+
+    double &fx()
+    {
+        return params[2];
+    }
+    double &fy()
+    {
+        return params[3];
+    }
+    double &cx()
+    {
+        return params[4];
+    }
+    double &cy()
     {
         return params[5];
     }
