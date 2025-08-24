@@ -5,6 +5,8 @@
 #include <iostream>
 #include <common/BaseTriMesh.h>
 #include <IO/MeshIO.h>
+#include "base/Pose.h"
+#include "base/CameraModule.h"
 
 namespace COMMON_LYJ
 {

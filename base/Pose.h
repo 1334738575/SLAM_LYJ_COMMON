@@ -18,6 +18,10 @@ public:
     Pose3D(const Eigen::Matrix3d& _R, const Eigen::Vector3d& _t)
         :R(_R), t(_t)
     {}
+    //Pose3D(const Eigen::Matrix3f & _R, const Eigen::Vector3f & _t)
+    //    :R(_R.cast<double>()), t(_t.cast<double>())
+    //{
+    //}
     Pose3D(const Matrix3x4d& _T)
         :R(_T.block(0, 0, 3, 3)), t(_T.block(0, 3, 3, 1))
     {}

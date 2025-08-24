@@ -62,7 +62,7 @@ class PinholeCmera : public CameraModule
 {
 public:
     PinholeCmera()
-        : CameraModule(CameraType::PINHOLE, std::vector<6, 0>) {}
+        : CameraModule(CameraType::PINHOLE, std::vector<double>(6, 0)) {}
     PinholeCmera(const std::vector<double> &_params)
         : CameraModule(CameraType::PINHOLE, _params)
     {
