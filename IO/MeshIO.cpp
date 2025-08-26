@@ -39,12 +39,12 @@ SLAM_LYJ_API void writePLY(const std::string &filename, const BaseTriMesh &btm)
     }
     file << "element face " << fCnt << "\n";
     file << "property list uchar int vertex_indices\n";
-    //if (btm.isEnableFNormals())
+    // if (btm.isEnableFNormals())
     //{
-    //    file << "property float fnx\n";
-    //    file << "property float fny\n";
-    //    file << "property float fnz\n";
-    //}
+    //     file << "property float fnx\n";
+    //     file << "property float fny\n";
+    //     file << "property float fnz\n";
+    // }
     file << "end_header\n";
 
     // 写入顶点数据
@@ -74,10 +74,10 @@ SLAM_LYJ_API void writePLY(const std::string &filename, const BaseTriMesh &btm)
     for (int i = 0; i < fCnt; ++i)
     {
         file << "3 " << faces[i].vId_[0] << " " << faces[i].vId_[1] << " " << faces[i].vId_[2] << "\n";
-        //if (btm.isEnableFNormals())
+        // if (btm.isEnableFNormals())
         //{
-        //    file << "3 " << btm.getFNormal(i)(0) << " " << btm.getFNormal(i)(1) << " " << btm.getFNormal(i)(2) << "\n";
-        //}
+        //     file << "3 " << btm.getFNormal(i)(0) << " " << btm.getFNormal(i)(1) << " " << btm.getFNormal(i)(2) << "\n";
+        // }
     }
 
     file.close();
@@ -120,12 +120,12 @@ SLAM_LYJ_API void writePLYBin(const std::string &filename, const BaseTriMesh &bt
     }
     file << "element face " << fCnt << "\n";
     file << "property list uchar int vertex_indices\n";
-    //if (btm.isEnableFNormals())
+    // if (btm.isEnableFNormals())
     //{
-    //    file << "property float fnx\n";
-    //    file << "property float fny\n";
-    //    file << "property float fnz\n";
-    //}
+    //     file << "property float fnx\n";
+    //     file << "property float fny\n";
+    //     file << "property float fnz\n";
+    // }
     file << "end_header\n";
 
     // # OBJ 线段示例
@@ -166,26 +166,26 @@ SLAM_LYJ_API void writePLYBin(const std::string &filename, const BaseTriMesh &bt
         writeBinary<int>(file, faces[i].vId_[0]);
         writeBinary<int>(file, faces[i].vId_[1]);
         writeBinary<int>(file, faces[i].vId_[2]);
-        //if (btm.isEnableFNormals())
+        // if (btm.isEnableFNormals())
         //{
-        //    writeBinary<float>(file, btm.getFNormal(i)(0));
-        //    writeBinary<float>(file, btm.getFNormal(i)(1));
-        //    writeBinary<float>(file, btm.getFNormal(i)(2));
-        //}
+        //     writeBinary<float>(file, btm.getFNormal(i)(0));
+        //     writeBinary<float>(file, btm.getFNormal(i)(1));
+        //     writeBinary<float>(file, btm.getFNormal(i)(2));
+        // }
     }
 
     file.close();
 }
 
-SLAM_LYJ_API void readPLY(const std::string& filename, BaseTriMesh& btm)
+SLAM_LYJ_API void readPLY(const std::string &filename, BaseTriMesh &btm)
 {
     btm.reset();
     std::ifstream file(filename);
     std::string line;
     int vSize = 0;
     int fSize = 0;
-    std::vector<Eigen::Vector3f>& vs = btm.getVertexs();
-    std::vector<BaseTriFace>& fs = btm.getFaces();
+    std::vector<Eigen::Vector3f> &vs = btm.getVertexs();
+    std::vector<BaseTriFace> &fs = btm.getFaces();
     bool hasVColor = false;
     bool hasVNormal = false;
     int colorSize = 3;
@@ -209,9 +209,10 @@ SLAM_LYJ_API void readPLY(const std::string& filename, BaseTriMesh& btm)
         file.close();
         std::cout << "try to read Binary PLY." << std::endl;
         return readPLYBin(filename, btm);
-	}
+    }
     std::getline(file, line);
-    while (line.find("element vertex") == std::string::npos) {
+    while (line.find("element vertex") == std::string::npos)
+    {
         std::getline(file, line);
     }
     int loc = line.rfind(" ");
@@ -219,13 +220,14 @@ SLAM_LYJ_API void readPLY(const std::string& filename, BaseTriMesh& btm)
     vSize = std::stoi(vSizeStr);
     vs.resize(vSize);
 
-    //xyz
+    // xyz
     std::getline(file, line);
     std::getline(file, line);
     std::getline(file, line);
-    
+
     std::getline(file, line);
-    while (line != "end_header") {
+    while (line != "end_header")
+    {
         if (line.find("red") != std::string::npos)
         {
             std::cout << "has vColor" << std::endl;
@@ -233,28 +235,31 @@ SLAM_LYJ_API void readPLY(const std::string& filename, BaseTriMesh& btm)
             std::getline(file, line);
             hasVColor = true;
             std::getline(file, line);
-            if (line.find("alpha") != std::string::npos) {
+            if (line.find("alpha") != std::string::npos)
+            {
                 colorSize = 4;
             }
             else
                 continue;
         }
-        else if (line.find("nx") != std::string::npos) {
+        else if (line.find("nx") != std::string::npos)
+        {
             std::cout << "has vNormal" << std::endl;
             std::getline(file, line);
             std::getline(file, line);
             hasVNormal = true;
         }
-        else if (line.find("element face") != std::string::npos) {
+        else if (line.find("element face") != std::string::npos)
+        {
             int loc = line.rfind(" ");
             std::string fSizeStr = line.substr(loc + 1);
             fSize = std::stoi(fSizeStr);
             fs.resize(fSize);
-            //break;
+            // break;
         }
         std::getline(file, line);
     }
-    //btm.setVertexs(vs);
+    // btm.setVertexs(vs);
     if (hasVColor)
         btm.enableVColors();
     if (hasVNormal)
@@ -263,53 +268,58 @@ SLAM_LYJ_API void readPLY(const std::string& filename, BaseTriMesh& btm)
     int r, g, b;
     int a;
     unsigned char fvSize;
-    for (int i = 0; i < vSize; ++i) {
-		std::getline(file, line);
-		std::istringstream iss(line);
-		iss >> vs[i](0) >> vs[i](1) >> vs[i](2);
+    for (int i = 0; i < vSize; ++i)
+    {
+        std::getline(file, line);
+        std::istringstream iss(line);
+        iss >> vs[i](0) >> vs[i](1) >> vs[i](2);
         if (hasVNormal)
         {
-            auto& vn = btm.getVNormal(i);
+            auto &vn = btm.getVNormal(i);
             iss >> vn(0) >> vn(1) >> vn(2);
             vn.normalize();
         }
-		if (hasVColor)
-		{
-			iss >> r >> g >> b;
-			btm.setVColor(i, Eigen::Vector3f(r / 255.0f, g / 255.0f, b / 255.0f));
-			if (colorSize == 4) {
-				iss >> a; // 读取 alpha 通道
-			}
-		}
+        if (hasVColor)
+        {
+            iss >> r >> g >> b;
+            btm.setVColor(i, Eigen::Vector3f(r / 255.0f, g / 255.0f, b / 255.0f));
+            if (colorSize == 4)
+            {
+                iss >> a; // 读取 alpha 通道
+            }
+        }
     }
-    for (int i = 0; i < fSize; ++i) {
-		std::getline(file, line);
-		std::istringstream iss(line);
-		iss >> fvSize; // 读取面顶点数量
-		if (fvSize != '3') {
-			std::cerr << "Only triangular faces are supported in PLY: " << filename << std::endl;
-			return;
-		}
-        auto& f = fs[i];
-		for (int j = 0; j < 3; ++j) {
-			iss >> f.vId_[j];
-		}
+    for (int i = 0; i < fSize; ++i)
+    {
+        std::getline(file, line);
+        std::istringstream iss(line);
+        iss >> fvSize; // 读取面顶点数量
+        if (fvSize != '3')
+        {
+            std::cerr << "Only triangular faces are supported in PLY: " << filename << std::endl;
+            return;
+        }
+        auto &f = fs[i];
+        for (int j = 0; j < 3; ++j)
+        {
+            iss >> f.vId_[j];
+        }
     }
-    //btm.setFaces(fs);
+    // btm.setFaces(fs);
 
     file.close();
     return;
 }
 
-SLAM_LYJ_API void readPLYBin(const std::string& filename, BaseTriMesh& btm)
+SLAM_LYJ_API void readPLYBin(const std::string &filename, BaseTriMesh &btm)
 {
     btm.reset();
     std::ifstream file(filename);
     std::string line;
     int vSize = 0;
     int fSize = 0;
-    std::vector<Eigen::Vector3f>& vs = btm.getVertexs();
-    std::vector<BaseTriFace>& fs = btm.getFaces();
+    std::vector<Eigen::Vector3f> &vs = btm.getVertexs();
+    std::vector<BaseTriFace> &fs = btm.getFaces();
     bool hasVColor = false;
     bool hasVNormal = false;
     int colorSize = 3;
@@ -335,7 +345,8 @@ SLAM_LYJ_API void readPLYBin(const std::string& filename, BaseTriMesh& btm)
         return readPLY(filename, btm);
     }
     std::getline(file, line);
-    while (line.find("element vertex") == std::string::npos) {
+    while (line.find("element vertex") == std::string::npos)
+    {
         std::getline(file, line);
     }
     int loc = line.rfind(" ");
@@ -343,13 +354,14 @@ SLAM_LYJ_API void readPLYBin(const std::string& filename, BaseTriMesh& btm)
     vSize = std::stoi(vSizeStr);
     vs.resize(vSize);
 
-    //xyz
+    // xyz
     std::getline(file, line);
     std::getline(file, line);
     std::getline(file, line);
 
     std::getline(file, line);
-    while (line != "end_header") {
+    while (line != "end_header")
+    {
         if (line.find("red") != std::string::npos)
         {
             std::cout << "has vColor" << std::endl;
@@ -357,19 +369,22 @@ SLAM_LYJ_API void readPLYBin(const std::string& filename, BaseTriMesh& btm)
             std::getline(file, line);
             hasVColor = true;
             std::getline(file, line);
-            if (line.find("alpha") != std::string::npos) {
+            if (line.find("alpha") != std::string::npos)
+            {
                 colorSize = 4;
             }
             else
                 continue;
         }
-        else if (line.find("nx") != std::string::npos) {
+        else if (line.find("nx") != std::string::npos)
+        {
             std::cout << "has vNormal" << std::endl;
             std::getline(file, line);
             std::getline(file, line);
             hasVNormal = true;
         }
-        else if (line.find("element face") != std::string::npos) {
+        else if (line.find("element face") != std::string::npos)
+        {
             int loc = line.rfind(" ");
             std::string fSizeStr = line.substr(loc + 1);
             fSize = std::stoi(fSizeStr);
@@ -386,13 +401,14 @@ SLAM_LYJ_API void readPLYBin(const std::string& filename, BaseTriMesh& btm)
     unsigned char a;
     unsigned char fvSize;
     float x, y, z;
-    for (int i = 0; i < vSize; ++i) {
+    for (int i = 0; i < vSize; ++i)
+    {
         readBinary<float>(file, vs[i](0));
         readBinary<float>(file, vs[i](1));
         readBinary<float>(file, vs[i](2));
         if (hasVNormal)
         {
-            auto& vn = btm.getVNormal(i);
+            auto &vn = btm.getVNormal(i);
             readBinary<float>(file, vn(0));
             readBinary<float>(file, vn(1));
             readBinary<float>(file, vn(2));
@@ -404,21 +420,24 @@ SLAM_LYJ_API void readPLYBin(const std::string& filename, BaseTriMesh& btm)
             readBinary<unsigned char>(file, g);
             readBinary<unsigned char>(file, b);
             btm.setVColor(i, Eigen::Vector3f(r / 255.0f, g / 255.0f, b / 255.0f));
-            if (colorSize == 4) {
+            if (colorSize == 4)
+            {
                 readBinary<unsigned char>(file, a);
             }
         }
-
     }
-    
-    for (int i = 0; i < fSize; ++i) {
+
+    for (int i = 0; i < fSize; ++i)
+    {
         readBinary<unsigned char>(file, fvSize);
-        if (fvSize != 3) {
+        if (fvSize != 3)
+        {
             std::cerr << "Only triangular faces are supported in PLY: " << filename << std::endl;
             return;
         }
-        auto& f = fs[i];
-        for (int j = 0; j < 3; ++j) {
+        auto &f = fs[i];
+        for (int j = 0; j < 3; ++j)
+        {
             readBinary<unsigned int>(file, f.vId_[j]);
         }
     }
@@ -427,34 +446,39 @@ SLAM_LYJ_API void readPLYBin(const std::string& filename, BaseTriMesh& btm)
     return;
 }
 
-SLAM_LYJ_API void writePLYMesh(const std::string& filename, const BaseTriMesh& btm)
+SLAM_LYJ_API void writePLYMesh(const std::string &filename, const BaseTriMesh &btm)
 {
-    try {
+    try
+    {
         // 写入测试
         PLYWriter writer;
         writer.write(filename, btm);
-        std::cout << "文件已保存\n";
+        // std::cout << "文件已保存\n";
     }
-    catch (const std::exception& e) {
+    catch (const std::exception &e)
+    {
         std::cerr << "错误: " << e.what() << std::endl;
         return;
     }
     return;
 }
 
-SLAM_LYJ_API void readPLYMesh(const std::string& filename, BaseTriMesh& btm)
+SLAM_LYJ_API void readPLYMesh(const std::string &filename, BaseTriMesh &btm)
 {
     btm.reset();
-    try {
+    try
+    {
         // 读取测试
         PLYReader reader;
-        if (reader.read(filename, btm)) {
+        if (reader.read(filename, btm))
+        {
             std::cout << "成功读取: "
-                << btm.getVn() << " vertices, "
-                << btm.getFn() << " faces\n";
+                      << btm.getVn() << " vertices, "
+                      << btm.getFn() << " faces\n";
         }
     }
-    catch (const std::exception& e) {
+    catch (const std::exception &e)
+    {
         std::cerr << "错误: " << e.what() << std::endl;
         return;
     }

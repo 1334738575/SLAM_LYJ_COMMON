@@ -368,7 +368,7 @@ static Eigen::Matrix3d calculateFundamentalMatrix(
 static Eigen::Matrix3d NormalizeRotation(const Eigen::Matrix3d &R)
 {
 	Eigen::JacobiSVD<Eigen::Matrix3d> svd(R, Eigen::ComputeFullU | Eigen::ComputeFullV);
-	return svd.matrixU() * svd.matrixV();
+	return svd.matrixU() * svd.matrixV().transpose();
 }
 static Eigen::Matrix3d ExpSO3(const double x, const double y, const double z)
 {
