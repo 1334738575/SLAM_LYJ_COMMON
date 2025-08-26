@@ -86,14 +86,27 @@ public:
             std::cout << "Read pinhole camera file fail!" << std::endl;
             return;
         }
-        params.resize(4);
-        int t;
-        f >> t >> params[2] >> params[3] >> params[4] >> params[5];
-        type = t == 1 ? PINHOLE : DEFAULT;
+        params.resize(6);
+        f >> params[0] >> params[1] >> params[2] >> params[3] >> params[4] >> params[5];
+        type = PINHOLE;
         f.close();
     }
     ~PinholeCmera() {}
 
+    void downSample()
+    {
+        for (auto &p : params)
+            p /= 2;
+    }
+    PinholeCmera downSample() const
+    {
+        std::vector<double> paramsNew(6);
+        for (int i = 0; i < 6; ++i)
+        {
+            paramsNew[i] = params[i] / 2;
+        }
+        return PinholeCmera(paramsNew);
+    }
     // ÎïÀíµ½Í¼Ïñ
     // override
     void world2Image(const Eigen::Vector3d &_P, Eigen::Vector2d &_p) const
