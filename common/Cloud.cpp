@@ -107,7 +107,7 @@ void Cloud::tranform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t)
 	{
 		m_vertexs[i] = (_R * m_vertexs[i].cast<double>() + _t).cast<float>();
 		if (isEnableVNormals())
-			m_vNormals = (_R * m_vNormals[i].cast<double>()).cast<float>();
+			m_vNormals[i] = (_R * m_vNormals[i].cast<double>()).cast<float>();
 	}
 }
 

@@ -194,7 +194,7 @@ void BaseTriMesh::tranform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t)
 	{
 		for (int i = 0; i < getFn(); ++i)
 		{
-			m_fNormals = (_R * m_fNormals[i].cast<double>()).cast<float>();
+			m_fNormals[i] = (_R * m_fNormals[i].cast<double>()).cast<float>();
 		}
 	}
 	Cloud::tranform(_R, _t);
