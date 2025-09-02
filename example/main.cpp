@@ -36,7 +36,7 @@ void testDefine()
 
     SLAM_LYJ::LYJBuffer buffer;
     SLAM_LYJ::CameraType camType = SLAM_LYJ::CameraType::FISHEYE;
-    SLAM_LYJ::PinholeCamera cam(std::vector<double>{100, 100, 1, 1, 1, 1});
+    SLAM_LYJ::PinholeCamera cam(100, 100, std::vector<double>{1, 1, 1, 1});
     SLAM_LYJ::Pose3D pose3D;
     std::cout << LYJOPT->sysHomePath << std::endl;
     SLAM_LYJ::TriangleOption triOpt;
