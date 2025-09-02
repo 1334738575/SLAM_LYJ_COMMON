@@ -20,6 +20,7 @@ namespace COMMON_LYJ
         }
         f >> _T.getR()(0, 0) >> _T.getR()(0, 1) >> _T.getR()(0, 2) >> _T.gett()(0) >> _T.getR()(1, 0) >> _T.getR()(1, 1) >> _T.getR()(1, 2) >> _T.gett()(1) >> _T.getR()(2, 0) >> _T.getR()(2, 1) >> _T.getR()(2, 2) >> _T.gett()(2);
         f.close();
+        return true;
     }
     bool writeT34(const std::string &_file, const SLAM_LYJ::Pose3D &_T)
     {
@@ -31,6 +32,7 @@ namespace COMMON_LYJ
         }
         f << _T.getR()(0, 0) << " " << _T.getR()(0, 1) << " " << _T.getR()(0, 2) << " " << _T.gett()(0) << " " << _T.getR()(1, 0) << " " << _T.getR()(1, 1) << " " << _T.getR()(1, 2) << " " << _T.gett()(1) << " " << _T.getR()(2, 0) << " " << _T.getR()(2, 1) << " " << _T.getR()(2, 2) << " " << _T.gett()(2);
         f.close();
+        return true;
     }
     bool writePinCamera(const std::string &_filename, const SLAM_LYJ::PinholeCamera&_cam)
     {
