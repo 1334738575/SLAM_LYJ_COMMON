@@ -1,6 +1,8 @@
 #ifndef SLAM_LYJ_BASE_H
 #define SLAM_LYJ_BASE_H
 
+#define EIGEN_NO_DEBUG
+
 // stl
 #include <iostream>
 #include <vector>
@@ -45,17 +47,17 @@ typedef Eigen::Matrix<float, 3, 4> Matrix3x4f;
 
 // export, SLAM_LYJ_API_EXPORTS can been defined in CMakeLists.txt: target_compile_definitions(SLAM_LYJ PRIVATE SLAM_LYJ_API_EXPORTS)
 #ifdef WIN32
-    #ifdef _MSC_VER
-        #ifdef SLAM_LYJ_API_EXPORTS
-            #define SLAM_LYJ_API __declspec(dllexport)
-        #else
-            #define SLAM_LYJ_API __declspec(dllimport)
-        #endif
-    #else
-        #define SLAM_LYJ_API
-    #endif
+#ifdef _MSC_VER
+#ifdef SLAM_LYJ_API_EXPORTS
+#define SLAM_LYJ_API __declspec(dllexport)
 #else
-    #define SLAM_LYJ_API
+#define SLAM_LYJ_API __declspec(dllimport)
+#endif
+#else
+#define SLAM_LYJ_API
+#endif
+#else
+#define SLAM_LYJ_API
 #endif
 
 #define SLAM_LYJ_CHECKI(ret)                                                          \
