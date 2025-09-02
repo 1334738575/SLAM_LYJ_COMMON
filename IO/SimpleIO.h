@@ -32,7 +32,7 @@ namespace COMMON_LYJ
         f << _T.getR()(0, 0) << " " << _T.getR()(0, 1) << " " << _T.getR()(0, 2) << " " << _T.gett()(0) << " " << _T.getR()(1, 0) << " " << _T.getR()(1, 1) << " " << _T.getR()(1, 2) << " " << _T.gett()(1) << " " << _T.getR()(2, 0) << " " << _T.getR()(2, 1) << " " << _T.getR()(2, 2) << " " << _T.gett()(2);
         f.close();
     }
-    bool writePinCamera(const std::string &_filename, const SLAM_LYJ::PinHoleCmera &_cam)
+    bool writePinCamera(const std::string &_filename, const SLAM_LYJ::PinHoleCamera &_cam)
     {
         std::ofstream of(_filename);
         if (!of.is_open())
@@ -41,7 +41,7 @@ namespace COMMON_LYJ
         of.close();
         return true;
     }
-    bool readPinCamera(const std::string &_filename, SLAM_LYJ::PinHoleCmera &_cam)
+    bool readPinCamera(const std::string &_filename, SLAM_LYJ::PinHoleCamera &_cam)
     {
         std::vector<double> params(4, 0);
         int w, h;
@@ -52,10 +52,10 @@ namespace COMMON_LYJ
         for (int i = 0; i < 4; ++i)
             f >> params[i];
         f.close();
-        _cam = SLAM_LYJ::PinCmera(w, h, params);
+        _cam = SLAM_LYJ::PinCamera(w, h, params);
         return true;
     }
-    bool drawCam(const std::string &_file, const SLAM_LYJ::PinholeCmera &_cam, const SLAM_LYJ::Pose3D &_Twc, const double _depth)
+    bool drawCam(const std::string &_file, const SLAM_LYJ::PinholeCamera &_cam, const SLAM_LYJ::Pose3D &_Twc, const double _depth)
     {
         Eigen::Vector3d p1(0, 0, _depth);
         Eigen::Vector3d p2(_cam.wide(), 0, _depth);

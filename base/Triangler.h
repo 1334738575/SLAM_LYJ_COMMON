@@ -64,7 +64,7 @@ public:
         }
         return true;
     }
-    bool runDirect(const std::vector<TemVec2> &_uvs, const std::vector<Pose3D> &_Tcws, const std::vector<PinholeCmera> &_cams,
+    bool runDirect(const std::vector<TemVec2> &_uvs, const std::vector<Pose3D> &_Tcws, const std::vector<PinholeCamera> &_cams,
                    TemVec3 &_Pw, bool _checkPro = false)
     {
         // construct
@@ -101,7 +101,7 @@ public:
         }
         return true;
     }
-    bool runWithRANSAC(const std::vector<TemVec2> &_uvs, const std::vector<Pose3D> &_Tcws, const std::vector<PinholeCmera> &_cams,
+    bool runWithRANSAC(const std::vector<TemVec2> &_uvs, const std::vector<Pose3D> &_Tcws, const std::vector<PinholeCamera> &_cams,
                        TemVec3 &_Pw)
     {
         int obSize = (int)_uvs.size();

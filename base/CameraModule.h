@@ -66,26 +66,26 @@ public:
     }
 };
 
-class PinholeCmera : public CameraModule
+class PinholeCamera : public CameraModule
 {
 public:
-    PinholeCmera()
+    PinholeCamera()
         : CameraModule(CameraType::PINHOLE)
     {
         params.assign(4, 0);
     }
-    PinholeCmera(int _w, int _h, double _fx, double _fy, double _cx, double _cy)
+    PinholeCamera(int _w, int _h, double _fx, double _fy, double _cx, double _cy)
         : CameraModule(CameraType::PINHOLE)
     {
         w = _w;
         h = _h;
         params = std::vector<double>{_fx, _fy, _cx, _cy};
     }
-    PinholeCmera(int _w, int _h, const std::vector<double> &_params)
+    PinholeCamera(int _w, int _h, const std::vector<double> &_params)
         : CameraModule(CameraType::PINHOLE, _w, _h, _params)
     {
     }
-    PinholeCmera(const std::string &_path)
+    PinholeCamera(const std::string &_path)
         : CameraModule(DEFAULT, -1, -1, std::vector<double>())
     {
         std::ifstream f(_path);
@@ -99,7 +99,7 @@ public:
         type = PINHOLE;
         f.close();
     }
-    ~PinholeCmera() {}
+    ~PinholeCamera() {}
 
     void downSample()
     {
@@ -108,9 +108,9 @@ public:
         for (auto &p : params)
             p /= 2;
     }
-    PinholeCmera downSample() const
+    PinholeCamera downSample() const
     {
-        return PinholeCmera(w / 2, h / 2, fx() / 2, fy() / 2, cx() / 2, cy() / 2);
+        return PinholeCamera(w / 2, h / 2, fx() / 2, fy() / 2, cx() / 2, cy() / 2);
     }
     // ŒÔ¿ÌµΩÕºœÒ
     // override
@@ -201,7 +201,7 @@ public:
         is.read(reinterpret_cast<char *>(&h), sizeof(int) * 1);
         is.read(reinterpret_cast<char *>(params.data()), sizeof(double) * 4);
     }
-    friend std::ostream &operator<<(std::ostream &os, const PinholeCmera &cls)
+    friend std::ostream &operator<<(std::ostream &os, const PinholeCamera &cls)
     {
         std::cout << cls.getType() << std::endl;
         std::cout << cls.getK();
