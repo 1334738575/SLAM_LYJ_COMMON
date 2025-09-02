@@ -23,20 +23,20 @@
 
 #include <IO/MeshIO.h>
 
-
 #include <vector>
 #include <string>
 #include <stdexcept>
 #include <algorithm>
 #include <cstdint>
 
-void testDefine() {
+void testDefine()
+{
 
     std::cout << SLAM_LYJ_HOME_PATH << std::endl;
 
     SLAM_LYJ::LYJBuffer buffer;
     SLAM_LYJ::CameraType camType = SLAM_LYJ::CameraType::FISHEYE;
-    SLAM_LYJ::PinholeCmera cam(std::vector<double>{1, 1, 1, 1});
+    SLAM_LYJ::PinholeCmera cam(std::vector<double>{100, 100, 1, 1, 1, 1});
     SLAM_LYJ::Pose3D pose3D;
     std::cout << LYJOPT->sysHomePath << std::endl;
     SLAM_LYJ::TriangleOption triOpt;
@@ -52,16 +52,15 @@ void testDefine() {
     SLAM_LYJ::SLAM_LYJ_MATH::Line3<float> line3f;
     SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(4);
     SLAM_LYJ::SLAM_LYJ_MATH::svd_icp(
-        { Eigen::Vector3f(1, 2, 3), Eigen::Vector3f(4, 5, 6) },
-        { Eigen::Vector3f(7, 8, 9), Eigen::Vector3f(10, 11, 12) }
-    );
+        {Eigen::Vector3f(1, 2, 3), Eigen::Vector3f(4, 5, 6)},
+        {Eigen::Vector3f(7, 8, 9), Eigen::Vector3f(10, 11, 12)});
     SLAM_LYJ::SLAM_LYJ_MATH::KMeans kmeans(3, 100);
     SLAM_LYJ::SLAM_LYJ_MATH::BitFlagVec btf(100);
     auto ret = SLAM_LYJ::SLAM_LYJ_MATH::factorial(5, 1);
-
 }
 
-void adjustPose() {
+void adjustPose()
+{
     using namespace SLAM_LYJ;
     using namespace SLAM_LYJ::SLAM_LYJ_MATH;
     Eigen::Vector3f o(0, 0, 0);
@@ -74,9 +73,10 @@ void adjustPose() {
     ps.push_back(y);
     ps.push_back(z);
     std::vector<Eigen::Vector3f> clrs = ps;
-	for (int i = 0; i < clrs.size(); ++i) {
+    for (int i = 0; i < clrs.size(); ++i)
+    {
         clrs[i] *= 255;
-	}
+    }
     BaseTriMesh btm;
     btm.setVertexs(ps);
     btm.enableVColors();
@@ -123,9 +123,10 @@ void adjustPose() {
     btmC.setVColors(clrs);
     SLAM_LYJ::writePLY("D:/tmp/cCoord.ply", btmC);
 
-
-    if (c(1) < 0) {
-        if (cz(1) > 0) {
+    if (c(1) < 0)
+    {
+        if (cz(1) > 0)
+        {
             Eigen::Matrix3d Rbc2 = Rodrigues2RotMatrix<double>(cy, PI) * Tbc.getR();
             Tbc.setR(Rbc2);
             Eigen::Vector3d c2x = Tbc.getR().col(0);
@@ -143,8 +144,10 @@ void adjustPose() {
             SLAM_LYJ::writePLY("D:/tmp/cCoord2.ply", btmC2);
         }
     }
-    if (c(1) > 0) {
-        if (cz(1) > 0) {
+    if (c(1) > 0)
+    {
+        if (cz(1) > 0)
+        {
             Eigen::Matrix3d Rbc2 = Rodrigues2RotMatrix<double>(cy, PI) * Tbc.getR();
             Tbc.setR(Rbc2);
             Eigen::Vector3d c2x = Tbc.getR().col(0);
@@ -164,12 +167,12 @@ void adjustPose() {
     }
 }
 
-
-
 // 生成简单四面体模型
-void write_obj_file(const std::string& filename) {
+void write_obj_file(const std::string &filename)
+{
     std::ofstream objFile(filename);
-    if (!objFile.is_open()) {
+    if (!objFile.is_open())
+    {
         throw std::runtime_error("无法创建文件: " + filename);
     }
 
@@ -180,48 +183,53 @@ void write_obj_file(const std::string& filename) {
 
     // 定义顶点 (单位立方体内)
     const std::vector<std::vector<float>> vertices = {
-        {0.0f, 0.0f, 0.0f},  // v1
-        {1.0f, 0.0f, 0.0f},  // v2
-        {0.5f, 1.0f, 0.0f},  // v3
-        {0.5f, 0.5f, 1.0f}   // v4 (顶部)
+        {0.0f, 0.0f, 0.0f}, // v1
+        {1.0f, 0.0f, 0.0f}, // v2
+        {0.5f, 1.0f, 0.0f}, // v3
+        {0.5f, 0.5f, 1.0f}  // v4 (顶部)
     };
 
     // 写入顶点
-    for (const auto& v : vertices) {
+    for (const auto &v : vertices)
+    {
         objFile << "v " << v[0] << " " << v[1] << " " << v[2] << "\n";
     }
 
     // 定义面 (四面体)
     const std::vector<std::vector<int>> faces = {
-        {1, 2, 3},   // 底面三角形
-        {1, 2, 4},   // 前侧面
-        {2, 3, 4},   // 右侧面
-        {3, 1, 4}    // 左侧面
+        {1, 2, 3}, // 底面三角形
+        {1, 2, 4}, // 前侧面
+        {2, 3, 4}, // 右侧面
+        {3, 1, 4}  // 左侧面
     };
 
     // 写入面 (注意OBJ索引从1开始)
     objFile << "\n# Face definitions\n";
-    for (const auto& f : faces) {
+    for (const auto &f : faces)
+    {
         objFile << "f " << f[0] << " " << f[1] << " " << f[2] << "\n";
     }
 
     objFile.close();
 }
 
-int testOBJ() {
-    try {
+int testOBJ()
+{
+    try
+    {
         write_obj_file("D:/tmp/output.obj");
         std::cout << "OBJ文件生成成功！" << std::endl;
     }
-    catch (const std::exception& e) {
+    catch (const std::exception &e)
+    {
         std::cerr << "错误: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
 }
 
-
-int testPLY() {
+int testPLY()
+{
     SLAM_LYJ::SLAM_LYJ_MATH::BaseTriMesh btmIn;
     SLAM_LYJ::readPLY("D:/tmp/res_mesh5.ply", btmIn);
     SLAM_LYJ::writePLYBin("D:/tmp/copy2.ply", btmIn);
@@ -229,28 +237,29 @@ int testPLY() {
 
     // 创建立方体顶点（边长2，中心在原点）
     std::vector<Eigen::Vector3f> vertices = {
-        {-1, -1, -1}, {1, -1, -1}, {1, 1, -1}, {-1, 1, -1},
-        {-1, -1, 1}, {1, -1, 1}, {1, 1, 1}, {-1, 1, 1}
-    };
+        {-1, -1, -1}, {1, -1, -1}, {1, 1, -1}, {-1, 1, -1}, {-1, -1, 1}, {1, -1, 1}, {1, 1, 1}, {-1, 1, 1}};
     std::vector<Eigen::Vector3f> vColors = {
-    {0, 0, 0}, {0, 0, 1}, {0, 1, 0}, {1, 0, 0},
-    {0, 1, 1}, {1, 0, 1}, {1, 1, 0}, {1, 1, 1}
-    };
+        {0, 0, 0}, {0, 0, 1}, {0, 1, 0}, {1, 0, 0}, {0, 1, 1}, {1, 0, 1}, {1, 1, 0}, {1, 1, 1}};
     // 创建立方体面（三角形）
     std::vector<SLAM_LYJ::SLAM_LYJ_MATH::BaseTriFace> faces = {
         // 底面
-        {0, 1, 2}, {2, 3, 0},
+        {0, 1, 2},
+        {2, 3, 0},
         // 顶面
-        {4, 5, 6}, {6, 7, 4},
+        {4, 5, 6},
+        {6, 7, 4},
         // 前面
-        {0, 3, 7}, {7, 4, 0},
+        {0, 3, 7},
+        {7, 4, 0},
         // 后面
-        {1, 2, 6}, {6, 5, 1},
+        {1, 2, 6},
+        {6, 5, 1},
         // 左面
-        {0, 4, 5}, {5, 1, 0},
+        {0, 4, 5},
+        {5, 1, 0},
         // 右面
-        {3, 2, 6}, {6, 7, 3}
-    };
+        {3, 2, 6},
+        {6, 7, 3}};
 
     SLAM_LYJ::SLAM_LYJ_MATH::BaseTriMesh btm;
     btm.setVertexs(vertices);
@@ -262,13 +271,13 @@ int testPLY() {
     return 0;
 }
 
-void testIO() {
+void testIO()
+{
     {
         std::vector<Eigen::Vector3f> ps = {
             Eigen::Vector3f(1, 2, 3),
             Eigen::Vector3f(4, 5, 6),
-            Eigen::Vector3f(7, 8, 9)
-        };
+            Eigen::Vector3f(7, 8, 9)};
         std::ofstream fw("D:/tmp/testIO.bin");
         SLAM_LYJ::writeBinaryVector(fw, ps);
         fw.close();
@@ -282,12 +291,9 @@ void testIO() {
     }
 }
 
-
-
-
-
 // 示例用法
-int main2() {
+int main2()
+{
     SLAM_LYJ::BaseTriMesh btm;
     SLAM_LYJ::readPLYMesh("D:/tmp/copy3.ply", btm);
     SLAM_LYJ::writePLYMesh("D:/tmp/copy3.ply", btm);
@@ -298,10 +304,10 @@ int main2() {
 int main(int argc, char *argv[])
 {
     std::cout << "Hello COMMON_LYJ" << std::endl;
-    //adjustPose();
-    //testPLY();
+    // adjustPose();
+    // testPLY();
     main2();
-    //testIO();
-    //testOBJ();
+    // testIO();
+    // testOBJ();
     return 0;
 }

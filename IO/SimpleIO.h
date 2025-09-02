@@ -32,6 +32,29 @@ namespace COMMON_LYJ
         f << _T.getR()(0, 0) << " " << _T.getR()(0, 1) << " " << _T.getR()(0, 2) << " " << _T.gett()(0) << " " << _T.getR()(1, 0) << " " << _T.getR()(1, 1) << " " << _T.getR()(1, 2) << " " << _T.gett()(1) << " " << _T.getR()(2, 0) << " " << _T.getR()(2, 1) << " " << _T.getR()(2, 2) << " " << _T.gett()(2);
         f.close();
     }
+    bool writePinCamera(const std::string &_filename, const SLAM_LYJ::PinHoleCmera &_cam)
+    {
+        std::ofstream of(_filename);
+        if (!of.is_open())
+            return false;
+        of << _cam.wide() << " " << _cam.height() << " " << _cam.fx() << " " << _cam.fy() << " " << _cam.cx() << " " << _cam.cy() << std::endl;
+        of.close();
+        return true;
+    }
+    bool readPinCamera(const std::string &_filename, SLAM_LYJ::PinHoleCmera &_cam)
+    {
+        std::vector<double> params(4, 0);
+        int w, h;
+        std::ifstream f(_filename);
+        if (!f.is_open())
+            return false;
+        f >> w >> h;
+        for (int i = 0; i < 4; ++i)
+            f >> params[i];
+        f.close();
+        _cam = SLAM_LYJ::PinCmera(w, h, params);
+        return true;
+    }
     bool drawCam(const std::string &_file, const SLAM_LYJ::PinholeCmera &_cam, const SLAM_LYJ::Pose3D &_Twc, const double _depth)
     {
         Eigen::Vector3d p1(0, 0, _depth);
@@ -99,6 +122,38 @@ namespace COMMON_LYJ
         btmTmp.setVColors(clrsTmp);
         SLAM_LYJ::writePLYMesh(_file, btmTmp);
         return true;
+    }
+    bool drawCube(const std::string &_file, float _l, float _w, float _h)
+    {
+        float L = _l / 2;
+        float W = _w / 2;
+        float H = _h / 2;
+        std::vector<Eigen::Vector3f> vertices;
+        vertices.emplace_back(-L, -W, -H);
+        vertices.emplace_back(L, -W, -H);
+        vertices.emplace_back(L, W, -H);
+        vertices.emplace_back(-L, W, -H);
+        vertices.emplace_back(-L, -W, H);
+        vertices.emplace_back(L, -W, H);
+        vertices.emplace_back(L, W, H);
+        vertices.emplace_back(-L, W, H);
+        std::vector<SLAM_LYJ::BaseTriFace> faces;
+        faces.emplace_back(0, 1, 2);
+        faces.emplace_back(0, 2, 3);
+        faces.emplace_back(4, 5, 6);
+        faces.emplace_back(4, 6, 7);
+        faces.emplace_back(2, 3, 7);
+        faces.emplace_back(2, 7, 6);
+        faces.emplace_back(0, 1, 5);
+        faces.emplace_back(0, 5, 4);
+        faces.emplace_back(0, 3, 7);
+        faces.emplace_back(0, 7, 4);
+        faces.emplace_back(1, 5, 6);
+        faces.emplace_back(1, 6, 2);
+        SLAM_LYJ::BaseTriMesh btm;
+        btm.setVertexs(vertices);
+        btm.setFaces(faces);
+        SLAM_LYJ::writePLYMesh(_file, btm);
     }
 } // namespace COMMON_LYJ
 
