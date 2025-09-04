@@ -188,7 +188,7 @@ void BaseTriMesh::reset()
 	m_textureCoords.clear();
 }
 
-void BaseTriMesh::tranform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t)
+void BaseTriMesh::transform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t)
 {
 	if (isEnableFNormals())
 	{
@@ -197,7 +197,7 @@ void BaseTriMesh::tranform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t)
 			m_fNormals[i] = (_R * m_fNormals[i].cast<double>()).cast<float>();
 		}
 	}
-	Cloud::tranform(_R, _t);
+	Cloud::transform(_R, _t);
 }
 
 NSP_SLAM_LYJ_MATH_END

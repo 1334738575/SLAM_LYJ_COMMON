@@ -57,7 +57,7 @@ public:
 
 	// inherited from Cloud
 	virtual void reset();
-	virtual void tranform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t);
+	virtual void transform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t);
 
 private:
 	std::vector<BaseTriFace> m_faces;
