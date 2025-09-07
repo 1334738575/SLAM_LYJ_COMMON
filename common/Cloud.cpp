@@ -101,7 +101,7 @@ void Cloud::reset()
 	m_vColors.clear();
 }
 
-void Cloud::tranform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t)
+void Cloud::transform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t)
 {
 	for (int i = 0; i < getVn(); ++i)
 	{

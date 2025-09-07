@@ -54,10 +54,11 @@ public:
 	void calculateFCenters();
 	bool calculateVNormals();
 	const int getFn() const;
+	void subBaseTriMeshByFaces(const std::vector<uint32_t>& _fIds, BaseTriMesh& _outMesh) const;
 
 	// inherited from Cloud
 	virtual void reset();
-	virtual void tranform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t);
+	virtual void transform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t);
 
 private:
 	std::vector<BaseTriFace> m_faces;

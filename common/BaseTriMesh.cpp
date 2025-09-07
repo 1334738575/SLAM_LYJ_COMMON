@@ -172,6 +172,65 @@ const int BaseTriMesh::getFn() const
 	return m_faces.size();
 }
 
+void BaseTriMesh::subBaseTriMeshByFaces(const std::vector<uint32_t>& _fIds, BaseTriMesh& _outMesh) const
+{
+	_outMesh.reset();
+	std::unordered_map<uint32_t, uint32_t> vIdOld2New;
+	std::vector<Eigen::Vector3f> newVertexs;
+	std::vector<BaseTriFace> newFaces;
+	newFaces.reserve(_fIds.size());
+	for (const auto& fid : _fIds)
+	{
+		BaseTriFace newFace;
+		for (int j = 0; j < 3; ++j)
+		{
+			uint32_t oldVid = m_faces[fid].vId_[j];
+			if (vIdOld2New.find(oldVid) == vIdOld2New.end())
+			{
+				vIdOld2New[oldVid] = newVertexs.size();
+				newVertexs.push_back(m_vertexs[oldVid]);
+			}
+			newFace.vId_[j] = vIdOld2New[oldVid];
+		}
+		newFaces.push_back(newFace);
+	}
+	_outMesh.setVertexs(newVertexs);
+	_outMesh.setFaces(newFaces);
+	if (isEnableVNormals())
+	{
+		std::vector<Eigen::Vector3f> newVNormals;
+		newVNormals.resize(newVertexs.size());
+		for (const auto& vidPair : vIdOld2New)
+		{
+			newVNormals[vidPair.second] = m_vNormals[vidPair.first];
+		}
+		_outMesh.enableVNormals();
+		_outMesh.setVNormals(newVNormals);
+	}
+	if (isEnableFNormals())
+	{
+		std::vector<Eigen::Vector3f> newFNormals;
+		newFNormals.resize(newFaces.size());
+		for (size_t i = 0; i < _fIds.size(); ++i)
+		{
+			newFNormals[i] = m_fNormals[_fIds[i]];
+		}
+		_outMesh.enableFNormals();
+		_outMesh.setFNormals(newFNormals);
+	}
+	if (hasFCenters())
+	{
+		std::vector<Eigen::Vector3f> newFCenters;
+		newFCenters.resize(newFaces.size());
+		for (size_t i = 0; i < _fIds.size(); ++i)
+		{
+			newFCenters[i] = m_centers[_fIds[i]];
+		}
+		_outMesh.enableFCenters();
+		_outMesh.setFCenters(newFCenters);
+	}
+}
+
 void BaseTriMesh::reset()
 {
 	m_vertexs.clear();
@@ -188,7 +247,7 @@ void BaseTriMesh::reset()
 	m_textureCoords.clear();
 }
 
-void BaseTriMesh::tranform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t)
+void BaseTriMesh::transform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t)
 {
 	if (isEnableFNormals())
 	{
@@ -197,7 +256,7 @@ void BaseTriMesh::tranform(const Eigen::Matrix3d &_R, const Eigen::Vector3d &_t)
 			m_fNormals[i] = (_R * m_fNormals[i].cast<double>()).cast<float>();
 		}
 	}
-	Cloud::tranform(_R, _t);
+	Cloud::transform(_R, _t);
 }
 
 NSP_SLAM_LYJ_MATH_END
