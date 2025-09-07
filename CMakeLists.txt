@@ -113,10 +113,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
 )
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(${PROJECT_NAME} PRIVATE
     ${${PROJECT_NAME}_INCLUDE_DIRS}
 )
-target_link_libraries(${PROJECT_NAME} PUBLIC
+target_link_libraries(${PROJECT_NAME} PRIVATE
     ${${PROJECT_NAME}_LIBRARIES}
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE SLAM_LYJ_API_EXPORTS) # TODO
@@ -132,8 +132,8 @@ endif()
 
 # ################################example##################################
 add_executable(${PROJECT_NAME}Bin example/main.cpp)
-target_include_directories(${PROJECT_NAME}Bin PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${PROJECT_NAME}Bin PRIVATE ${PROJECT_NAME})
+target_include_directories(${PROJECT_NAME}Bin PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${${PROJECT_NAME}_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME}Bin PRIVATE ${PROJECT_NAME} ${${PROJECT_NAME}_LIBRARIES})
 
 if(DEFINED ${PROJECT_NAME}_LIBRARY_OUTPUT_PATH)
     set_target_properties(${PROJECT_NAME}Bin PROPERTIES

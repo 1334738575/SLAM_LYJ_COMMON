@@ -1,2 +1,2 @@
 #pragma once
-#define SLAM_LYJ_HOME_PATH "D:/testCmake/pro4/"
+#define SLAM_LYJ_HOME_PATH "D:/SLAM_LYJ/SLAM_LYJ_COMMON/"
