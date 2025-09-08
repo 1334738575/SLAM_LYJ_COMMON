@@ -47,9 +47,6 @@ public:
 		Vector3 lbdP;
 		int curDepth = -1;
 
-		Node()
-		{
-		}
 		Node(const std::vector<Vector3> &_vs, const std::vector<int> &_ids,
 			 const Vector3 &_lbd, const Vector3 &_rfu)
 			: ids(_ids), lbdP(_lbd), rfuP(_rfu)
