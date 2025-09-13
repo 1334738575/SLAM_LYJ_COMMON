@@ -21,7 +21,7 @@ namespace stlplus
   // thrown by division when the divisor is zero
   // This is a subclass of std::logic_error so can be caught by a generic catch clause for the superclass
 
-  class divide_by_zero : public std::logic_error {
+  class SLAM_LYJ_API divide_by_zero : public std::logic_error {
   public:
     divide_by_zero (const std::string& what_arg): std::logic_error (what_arg) { }
   };

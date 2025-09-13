@@ -38,7 +38,7 @@ namespace stlplus
 
 ////////////////////////////////////////////////////////////////////////////////
 
-  class inf
+  class SLAM_LYJ_API inf
   {
   public:
 
@@ -237,8 +237,8 @@ namespace stlplus
 
   ////////////////////////////////////////////////////////////////////////////////
 
-  std::ostream& operator << (std::ostream&, const inf&);
-  std::istream& operator >> (std::istream&, inf&);
+  SLAM_LYJ_API std::ostream& operator << (std::ostream&, const inf&);
+  SLAM_LYJ_API std::istream& operator >> (std::istream&, inf&);
 
   ////////////////////////////////////////////////////////////////////////////////
 

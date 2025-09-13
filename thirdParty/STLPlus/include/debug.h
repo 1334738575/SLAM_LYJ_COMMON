@@ -37,7 +37,7 @@
 namespace stlplus
 {
 
-  class assert_failed : public std::logic_error
+  class SLAM_LYJ_API assert_failed : public std::logic_error
   {
   public:
     assert_failed(const char* file, int line, const char* function, const char* message) ;
@@ -85,11 +85,11 @@ namespace stlplus
 namespace stlplus
 {
 
-  void debug_global(const char* file, int line, const char* function, bool state = true);
+    SLAM_LYJ_API void debug_global(const char* file, int line, const char* function, bool state = true);
   // exceptions: assert_failed
-  void debug_assert_fail(const char* file, int line, const char* function, const char* test) ;
+    SLAM_LYJ_API void debug_assert_fail(const char* file, int line, const char* function, const char* test) ;
 
-  class debug_trace
+  class SLAM_LYJ_API debug_trace
   {
   public:
     debug_trace(const char* f, int l, const char* fn);

@@ -110,15 +110,15 @@ namespace stlplus
 
   // format by appending to a string and return the increase in length
   // if there is an error, return a negative number and leave the string unchanged
-  int dprintf (std::string& formatted, const char* format, ...);
-  int vdprintf (std::string& formatted, const char* format, va_list args);
+	SLAM_LYJ_API int dprintf (std::string& formatted, const char* format, ...);
+	SLAM_LYJ_API int vdprintf (std::string& formatted, const char* format, va_list args);
 
   // format into a new string and return the result
   // if there is an error, throw an exception
   // exceptions: std::invalid_argument
-  std::string dformat (const char* format, ...) ;
+	SLAM_LYJ_API std::string dformat (const char* format, ...) ;
   // exceptions: std::invalid_argument
-  std::string vdformat (const char* format, va_list) ;
+	SLAM_LYJ_API std::string vdformat (const char* format, va_list) ;
 
 }
 

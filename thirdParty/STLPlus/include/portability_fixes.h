@@ -19,6 +19,8 @@
 // Problem with MicroSoft defining two different macros to identify Windows
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "base/Base.h"
+
 #if defined(_WIN32) || defined(_WIN64) || defined(_WIN32_WCE)
 #define MSWINDOWS
 #endif
@@ -86,7 +88,7 @@ unsigned sleep(unsigned seconds);
 
 namespace stlplus
 {
-  bool little_endian(void);
+	SLAM_LYJ_API bool little_endian(void);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

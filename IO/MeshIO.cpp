@@ -177,6 +177,17 @@ SLAM_LYJ_API void writePLYBin(const std::string &filename, const BaseTriMesh &bt
     file.close();
 }
 
+SLAM_LYJ_API void readBinaryFloat(std::ifstream& file, float& value) {
+    if (!file.read(reinterpret_cast<char*>(&value), 4)) {
+        std::cerr << "¶ÁÈ¡Ê§°Ü! ´íÎóÎ»: "
+            << file.rdstate()
+            << " (EOF=" << std::ios::eofbit
+            << ", FAIL=" << std::ios::failbit
+            << ", BAD=" << std::ios::badbit << ")" << std::endl;
+        std::cout << "read failed!" << std::endl;
+    }
+}
+
 SLAM_LYJ_API void readPLY(const std::string &filename, BaseTriMesh &btm)
 {
     btm.reset();

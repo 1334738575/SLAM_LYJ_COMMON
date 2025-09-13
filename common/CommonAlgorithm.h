@@ -86,16 +86,16 @@ template <typename T>
 class CompressVV2V
 {
 public:
-	CompressVV2V() = delete;
+	CompressVV2V() {};
 	CompressVV2V(const std::vector<std::vector<T>> &_data)
 	{
 		int indSize = (int)_data.size();
 		m_indexs.resize(indSize + 1, 0);
 		for (int i = 0; i < indSize; i++)
 			m_indexs[i + 1] = m_indexs[i] + (int)_data[i].size();
-		m_data.resize(dataSize());
+		m_data.resize(m_indexs.back());
 		for (int i = 0; i < indSize; i++)
-			memcpy(m_data + m_indexs[i], _data[i].data(), sizeof(T) * _data[i].size());
+			memcpy(m_data.data() + m_indexs[i], _data[i].data(), sizeof(T) * _data[i].size());
 	}
 	CompressVV2V(std::vector<T> &&_data, std::vector<int> &&_indexs)
 	{
@@ -104,22 +104,48 @@ public:
 	}
 	~CompressVV2V() {}
 
-	inline bool empty() { return m_data.empty(); }
-	inline int dataSize()
+	void clear()
+	{
+		m_data.clear();
+		m_indexs.clear();
+	}
+	void compress(const std::vector<std::vector<T>>& _data)
+	{
+		clear();
+		int indSize = (int)_data.size();
+		m_indexs.resize(indSize + 1, 0);
+		for (int i = 0; i < indSize; i++)
+			m_indexs[i + 1] = m_indexs[i] + (int)_data[i].size();
+		m_data.resize(m_indexs.back());
+		int tmp;
+		for (int i = 0; i < indSize; i++) {
+			memcpy(m_data.data() + m_indexs[i], _data[i].data(), sizeof(T) * _data[i].size());
+		}
+	}
+	inline bool empty() const { return m_data.empty(); }
+	inline int dataSize() const
 	{
 		return m_data.size();
 	}
-	inline int indexSize()
+	inline int indexSize() const
 	{
 		return m_indexs.size();
 	}
-	inline int subSize(int _ind)
+	inline int subSize(int _ind) const
 	{
 		return m_indexs[_ind + 1] - m_indexs[_ind];
 	}
 	inline T &data(int _ind, int _subInd)
 	{
 		return m_data[m_indexs[_ind] + _subInd];
+	}
+	inline T* subDataPtr(int _ind)
+	{
+		return &m_data[m_indexs[_ind]];
+	}
+	inline const T* subDataPtr(int _ind) const
+	{
+		return &m_data[m_indexs[_ind]];
 	}
 	inline const T &data(int _ind, int _subInd) const
 	{

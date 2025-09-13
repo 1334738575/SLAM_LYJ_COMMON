@@ -34,16 +34,7 @@ template <typename T>
 void readBinary(std::ifstream& file, T& value) {
 	file.read(reinterpret_cast<char*>(&value), sizeof(T));
 }
-void readBinaryFloat(std::ifstream& file, float& value) {
-	if (!file.read(reinterpret_cast<char*>(&value), 4)) {
-		std::cerr << "读取失败! 错误位: "
-			<< file.rdstate()
-			<< " (EOF=" << std::ios::eofbit
-			<< ", FAIL=" << std::ios::failbit
-			<< ", BAD=" << std::ios::badbit << ")" << std::endl;
-		std::cout << "read failed!" << std::endl;
-	}
-}
+SLAM_LYJ_API void readBinaryFloat(std::ifstream& file, float& value);
 template <typename T>
 void readBinaryVector(std::ifstream& file, std::vector<T>& vec) {
 	size_t size = 0;
@@ -68,7 +59,7 @@ struct Face {
     std::vector<int> indices;
 };
 
-class PLYReader {
+class SLAM_LYJ_API PLYReader {
 public:
     bool read(const std::string& filename,
         std::vector<Vertex>& vertices,
@@ -274,7 +265,7 @@ private:
 };
 
 // 写入PLY文件
-class PLYWriter {
+class SLAM_LYJ_API PLYWriter {
 public:
     void write(const std::string& filename,
         const std::vector<Vertex>& vertices,

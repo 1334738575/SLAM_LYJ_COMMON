@@ -21,7 +21,7 @@ namespace stlplus
   //////////////////////////////////////////////////////////////////////////////
   // dynaload class manages a dynamic loadable library and unloads it on destruction
 
-  class dynaload
+  class SLAM_LYJ_API dynaload
   {
   public:
 

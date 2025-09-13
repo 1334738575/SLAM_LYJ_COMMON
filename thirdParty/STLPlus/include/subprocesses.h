@@ -33,7 +33,7 @@ namespace stlplus
   // includes splitting of command lines into argvectors as per the shell
   // (removing quotes) and the reverse conversion (adding quotes where necessary)
 
-  class arg_vector
+  class SLAM_LYJ_API arg_vector
   {
   private:
     char** m_argv;
@@ -107,7 +107,7 @@ namespace stlplus
 #define ENVIRON_TYPE char**
 #endif
 
-  class env_vector
+  class SLAM_LYJ_API env_vector
   {
   private:
     ENVIRON_TYPE m_env;
@@ -159,7 +159,7 @@ namespace stlplus
   ////////////////////////////////////////////////////////////////////////////////
   // Synchronous subprocess
 
-  class subprocess
+  class SLAM_LYJ_API subprocess
   {
   protected:
 
@@ -214,7 +214,7 @@ namespace stlplus
   ////////////////////////////////////////////////////////////////////////////////
   // Preconfigured subprocess which executes a command and captures its output
 
-  class backtick_subprocess : public subprocess
+  class SLAM_LYJ_API backtick_subprocess : public subprocess
   {
   protected:
     std::string m_text;
@@ -232,7 +232,7 @@ namespace stlplus
   ////////////////////////////////////////////////////////////////////////////////
   // Asynchronous subprocess
 
-  class async_subprocess
+  class SLAM_LYJ_API async_subprocess
   {
   protected:
     PID_TYPE m_pid;

@@ -28,7 +28,7 @@ namespace stlplus
   // wild = the wildcard expression
   // match = the string to test against that expression
   // e.g. wildcard("[a-f]*", "fred") returns true
-  bool wildcard(const std::string& wild, const std::string& match);
+	SLAM_LYJ_API bool wildcard(const std::string& wild, const std::string& match);
 
 }
 
