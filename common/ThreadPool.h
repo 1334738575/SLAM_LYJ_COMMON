@@ -12,6 +12,8 @@ NSP_SLAM_LYJ_MATH_BEGIN
 
 
 using Task = std::function<void()>;
+using TaskFor = std::function<void(uint64_t, uint64_t)>;
+using TaskForWithId = std::function<void(uint64_t, uint64_t, uint32_t)>;
 
 class SLAM_LYJ_API Thread: public std::thread
 {
@@ -24,6 +26,10 @@ private:
     bool m_toFinish = false;
     bool m_isFinish = false;
     std::mutex m_mtx2;
+
+    std::queue<Task> m_taskFors;
+    std::condition_variable m_conFor;
+    std::mutex m_mtxFor;
 public:
     Thread(/* args */)=delete;
 
@@ -33,6 +39,10 @@ public:
     void start();
     int getIdInner();
     void finish();
+
+    void run(TaskFor _task, uint64_t _s, uint64_t _e);
+    void runWithId(TaskForWithId _task, uint64_t _s, uint64_t _e, uint32_t _id);
+    void addTask(Task _task);
 };
 
 
@@ -58,6 +68,9 @@ public:
     void finish();
     int maxThreadNum();
     int currentThreadNum();
+
+    void process(TaskFor _task, uint64_t _s, uint64_t _e);
+    void processWithId(TaskForWithId _task, uint64_t _s, uint64_t _e);
 };
 
 

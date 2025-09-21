@@ -19,8 +19,8 @@ namespace SLAM_LYJ
     template<typename T, int DIM>
     class FLANNWrapper {
     public:
-        using Clock = std::chrono::high_resolution_clock;
 
+        using Clock = std::chrono::high_resolution_clock;
         // 内存优化：使用连续内存块
         std::vector<T> dataset;
         T* dataPtr = nullptr;
@@ -31,7 +31,7 @@ namespace SLAM_LYJ
 
         // 构建索引（自动参数优化）
         void build_index(T* data, size_t rows, bool use_mmap = false) {
-            auto t_start = Clock::now();
+            //auto t_start = Clock::now();
 
             // 内存管理策略
             if (use_mmap) {
@@ -58,9 +58,9 @@ namespace SLAM_LYJ
             index = std::make_shared<flann::Index<flann::L2<T>>>(mat_data, flann::KDTreeIndexParams(4));
             index->buildIndex();
 
-            std::cout << "Index built in "
-                << std::chrono::duration_cast<std::chrono::milliseconds>(
-                    Clock::now() - t_start).count() << " ms\n";
+            //std::cout << "Index built in "
+            //    << std::chrono::duration_cast<std::chrono::milliseconds>(
+            //        Clock::now() - t_start).count() << " ms\n";
         }
 
         // 批量查询优化（OpenMP并行）

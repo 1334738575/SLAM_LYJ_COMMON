@@ -18,22 +18,33 @@ void Thread::start()
 {
     while (true)
     {
-        if (m_mtx == nullptr)
-            continue;
         //take
-        std::unique_lock<std::mutex> lck(*m_mtx);  
-        m_con->wait(lck, [&]{return m_tasks && !m_tasks->empty();});
-        auto func = m_tasks->front();
-        m_tasks->pop();
+        std::unique_lock<std::mutex> lck(m_mtxFor);
+        m_conFor.wait(lck, [&] {return !m_taskFors.empty(); });
+        auto func = m_taskFors.front();
+        m_taskFors.pop();
         lck.unlock();
         //run
         func();
         //finish
         std::lock_guard<std::mutex> lck2(m_mtx2);
-        if(m_toFinish){
-            m_isFinish = true;
-            break;
-        }
+        m_isFinish = true;
+        //if (m_mtx == nullptr)
+        //    continue;
+        ////take
+        //std::unique_lock<std::mutex> lck(*m_mtx);  
+        //m_con->wait(lck, [&]{return m_tasks && !m_tasks->empty();});
+        //auto func = m_tasks->front();
+        //m_tasks->pop();
+        //lck.unlock();
+        ////run
+        //func();
+        ////finish
+        //std::lock_guard<std::mutex> lck2(m_mtx2);
+        //if(m_toFinish){
+        //    m_isFinish = true;
+        //    break;
+        //}
     }
     
 }
@@ -50,9 +61,38 @@ void Thread::finish()
         std::lock_guard<std::mutex> lck2(m_mtx2);
         if (m_isFinish)
             break;
-        _sleep(10);
+        _sleep(1);
     }
 
+}
+void Thread::run(TaskFor _task, uint64_t _s, uint64_t _e)
+{
+    {
+        std::lock_guard<std::mutex> lck2(m_mtx2);
+        m_isFinish = false;
+    }
+    _task(_s, _e);
+    {
+        std::lock_guard<std::mutex> lck2(m_mtx2);
+        m_isFinish = true;
+    }
+}
+void Thread::runWithId(TaskForWithId _task, uint64_t _s, uint64_t _e, uint32_t _id)
+{
+    {
+        std::lock_guard<std::mutex> lck2(m_mtx2);
+        m_isFinish = false;
+    }
+    _task(_s, _e, _id);
+    {
+        std::lock_guard<std::mutex> lck2(m_mtx2);
+        m_isFinish = true;
+    }
+}
+void Thread::addTask(Task _task)
+{
+    std::lock_guard<std::mutex> lck(m_mtxFor);
+    m_taskFors.push(_task);
 }
 
 
@@ -60,10 +100,10 @@ void Thread::finish()
 ThreadPool::ThreadPool(const int _threadNum)
 {
     m_maxThreadNum = std::thread::hardware_concurrency();
-    if(_threadNum <= 0)
+    if(_threadNum <= 0 || _threadNum > m_maxThreadNum - 3)
         m_threadNum = m_maxThreadNum-3;
-    if(m_threadNum <= 0)
-        m_threadNum = 1;
+    else
+        m_threadNum = _threadNum;
 #ifdef SYS_DEBUG
     std::cout<<"create thread pool, size: " << m_threadNum << std::endl;
 #endif
@@ -100,7 +140,7 @@ void ThreadPool::finish()
         if (m_tasks.empty()) {
             break;
         }
-        _sleep(10);
+        _sleep(1);
     }
     for(int i=0;i<m_threadNum;++i)
     {
@@ -117,6 +157,61 @@ int ThreadPool::maxThreadNum()
 int ThreadPool::currentThreadNum()
 {
     return m_threadNum;
+}
+
+void ThreadPool::process(TaskFor _task, uint64_t _s, uint64_t _e)
+{
+	if (m_threadNum <= 1)
+	{
+		_task(_s, _e);
+		return;
+	}
+	uint64_t total = _e - _s;
+	uint64_t block = total / m_threadNum;
+	uint64_t remain = total % m_threadNum;
+	uint64_t start = _s;
+	uint64_t end = start + block;
+	for (int i = 0; i < m_threadNum; ++i)
+	{
+		if (i == m_threadNum - 1)
+			end += remain;
+		//auto func = [_task, start, end]() {
+		//	_task(start, end);
+		//	};
+		//addTask(func);
+        m_thds[i]->run(_task, start, end);
+		start = end;
+		end = start + block;
+	}
+	finish();
+}
+
+void ThreadPool::processWithId(TaskForWithId _task, uint64_t _s, uint64_t _e)
+{
+    if (m_threadNum <= 1)
+    {
+        _task(_s, _e, 0);
+        return;
+    }
+    uint64_t total = _e - _s;
+    uint64_t block = total / m_threadNum;
+    uint64_t remain = total % m_threadNum;
+    uint64_t start = _s;
+    uint64_t end = start + block;
+    for (int i = 0; i < m_threadNum; ++i)
+    {
+        if (i == m_threadNum - 1)
+            end += remain;
+        auto func = [_task, start, end, i]() {
+        	_task(start, end, i);
+        	};
+        //addTask(func);
+        //m_thds[i]->runWithId(_task, start, end, i);
+        m_thds[i]->addTask(func);
+        start = end;
+        end = start + block;
+    }
+    finish();
 }
 
 NSP_SLAM_LYJ_MATH_END
