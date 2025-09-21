@@ -27,6 +27,10 @@ public:
         : R(_T.block(0, 0, 3, 3)), t(_T.block(0, 3, 3, 1))
     {
     }
+    Pose3D(const Eigen::Matrix<double, 4, 4>& _T)
+        : R(_T.block(0, 0, 3, 3)), t(_T.block(0, 3, 3, 1))
+    {
+    }
     Pose3D(const Eigen::Vector3d &_c1, const Eigen::Vector3d &_n1,
            const Eigen::Vector3d &_c2, const Eigen::Vector3d &_n2)
     {
@@ -56,6 +60,16 @@ public:
         return os;
     }
 
+    void getMatrix34d(Matrix3x4d& _T) const
+    {
+        _T.block(0, 0, 3, 3) = R;
+        _T.block(0, 3, 3, 1) = t;
+    }
+    void getMatrix34f(Matrix3x4f& _T) const
+    {
+        _T.block(0, 0, 3, 3) = R.cast<float>();
+        _T.block(0, 3, 3, 1) = t.cast<float>();
+    }
     const Eigen::Matrix3d &getR() const
     {
         return R;

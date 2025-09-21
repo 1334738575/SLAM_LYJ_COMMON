@@ -195,6 +195,7 @@ typedef Line2<float> Line2f;
 //光栅化 bresenham
 static void bresenhamLine(int x0, int y0, int x1, int y1, std::vector<Eigen::Vector2i>& _ps)
 {
+    _ps.clear();
     // 确保起点x0 < x1
     if (x0 > x1)
     {

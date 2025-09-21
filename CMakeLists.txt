@@ -99,9 +99,14 @@ set(OpenCV_DIR "D:/SLAM_LYJ/dependencies/Opencv/lib")
 find_package(OpenCV)
 list(APPEND ${PROJECT_NAME}_INCLUDE_DIRS ${OpenCV_INCLUDE_DIRS})
 list(APPEND ${PROJECT_NAME}_LIBRARIES ${OpenCV_LIBS})
-
 list(APPEND ${PROJECT_NAME}_BINARY_DIRS "D:/SLAM_LYJ/dependencies/Opencv/bin")
 include_directories(${${PROJECT_NAME}_INCLUDE_DIRS})
+set(flann_DIR "D:/SLAM_LYJ/dependencies/flann/lib/cmake/flann")
+find_package(flann)
+list(APPEND ${PROJECT_NAME}_INCLUDE_DIRS "D:/SLAM_LYJ/dependencies/flann/include")
+list(APPEND ${PROJECT_NAME}_LIBRARIES flann::flann)
+list(APPEND ${PROJECT_NAME}_BINARY_DIRS "D:/SLAM_LYJ/dependencies/flann/bin\;")
+list(APPEND ${PROJECT_NAME}_BINARY_DIRS "D:/SLAM_LYJ/dependencies/lz4/bin\;")
 
 # ################################code##################################
 set(${PROJECT_NAME}_SRC_FILES)

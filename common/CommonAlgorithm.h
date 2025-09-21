@@ -141,10 +141,14 @@ public:
 	}
 	inline T* subDataPtr(int _ind)
 	{
+		if (m_indexs[_ind] >= m_data.size())
+			return nullptr;
 		return &m_data[m_indexs[_ind]];
 	}
 	inline const T* subDataPtr(int _ind) const
 	{
+		if (m_indexs[_ind] >= m_data.size())
+			return nullptr;
 		return &m_data[m_indexs[_ind]];
 	}
 	inline const T &data(int _ind, int _subInd) const
@@ -163,12 +167,23 @@ private:
 class SLAM_LYJ_API BitFlagVec
 {
 public:
+	BitFlagVec() {}
 	BitFlagVec(int _size) : m_size(_size)
 	{
 		int s = _size >> 3;
 		m_flags.resize(s + 1, 0);
 	}
 
+	void assign(int _size, bool _v)
+	{
+		m_size = _size;
+		int s = _size >> 3;
+		m_flags.resize(s + 1, 0);
+		if (_v)
+			m_flags.assign(m_flags.size(), 255);
+		else
+			m_flags.assign(m_flags.size(), 0);
+	}
 	inline void reset() { m_flags.assign(m_flags.size(), 0); }
 	inline const int size() { return m_size; }
 	bool operator[](int _i)

@@ -32,7 +32,8 @@ public:
     virtual void world2Image(const Eigen::Vector3d &_P, double &_u, double &_v) const = 0;
     // 图像到物理
     virtual void image2World(const Eigen::Vector2d &_p, const double _d, Eigen::Vector3d &_P) const = 0;
-    virtual void image2World(const double _u, const double _v, const double _d, Eigen::Vector3d &_P) const = 0;
+    virtual void image2World(const double& _u, const double& _v, const double& _d, Eigen::Vector3d& _P) const = 0;
+    virtual void image2World(const float& _u, const float& _v, const float& _d, Eigen::Vector3f &_P) const = 0;
     virtual void image2World(const Eigen::Vector3d &_p, Eigen::Vector3d &_P) const = 0; // u v d
     // 内参矩阵
     virtual Eigen::Matrix3d getK() const = 0;
@@ -131,7 +132,13 @@ public:
         image2World(_p(0), _p(1), _d, _P);
     }
     // override
-    void image2World(const double _u, const double _v, const double _d, Eigen::Vector3d &_P) const
+    void image2World(const double& _u, const double& _v, const double& _d, Eigen::Vector3d &_P) const
+    {
+        _P(0) = 1.0 / fx() * (_u - cx()) * _d;
+        _P(1) = 1.0 / fy() * (_v - cy()) * _d;
+        _P(2) = _d;
+    }
+    void image2World(const float& _u, const float& _v, const float& _d, Eigen::Vector3f& _P) const
     {
         _P(0) = 1.0 / fx() * (_u - cx()) * _d;
         _P(1) = 1.0 / fy() * (_v - cy()) * _d;

@@ -21,6 +21,7 @@
 #include <common/KMeans.h>
 #include <common/CommonAlgorithm.h>
 #include <common/PossionSolver.h>
+#include <common/FlannSearch.h>
 
 #include <IO/MeshIO.h>
 
@@ -480,6 +481,52 @@ int main3()
     return 0;
 }
 
+
+// 使用示例
+int main4() {
+    size_t DIM = 3;      // 特征维度（例如SIFT特征）
+    size_t BATCH_SIZE = 1; // 批处理查询数量
+
+    // 生成10^6个128维随机数据（生产环境应从文件加载）
+    const size_t NUM_DATA = 10000;
+    std::vector<float> big_data(NUM_DATA * DIM);
+    std::generate(big_data.begin(), big_data.end(),
+        []() { return static_cast<float>(rand()) / RAND_MAX; });
+
+    SLAM_LYJ::FLANNWrapper<float, 3> flann;
+
+    // 构建并保存索引
+    flann.build_index(big_data.data(), NUM_DATA);
+    //flann.save_index("large_index.flann");
+
+    // 生成批查询数据
+    std::vector<float> queries(BATCH_SIZE * DIM, 0);
+    std::vector<int> indices(BATCH_SIZE * 1); // 每个查询返回10个结果
+    std::vector<float> dists(BATCH_SIZE * 1);
+
+    // 执行批量查询
+    auto t_start = SLAM_LYJ::FLANNWrapper<float, 3>::Clock::now();
+    flann.batch_search<1>(queries.data(), BATCH_SIZE, indices, dists);
+
+    std::cout << "Batch search completed in "
+        << std::chrono::duration_cast<std::chrono::microseconds>(
+            SLAM_LYJ::FLANNWrapper<float, 3>::Clock::now() - t_start).count()
+        << " μs\n";
+
+    for (int i = 0; i < 1; ++i)
+    {
+        std::cout << i << " :" << indices[i] << " " << dists[i] << std::endl;
+        std::cout << big_data[indices[i] * DIM] << " " << big_data[indices[i] * DIM + 1] << " " << big_data[indices[i] * DIM + 2] << std::endl;
+		float dd = 
+			big_data[indices[i] * DIM] * big_data[indices[i] * DIM] +
+			big_data[indices[i] * DIM + 1] * big_data[indices[i] * DIM + 1] +
+			big_data[indices[i] * DIM + 2] * big_data[indices[i] * DIM + 2];
+        std::cout << dd << std::endl;
+    }
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     std::cout << "Hello COMMON_LYJ" << std::endl;
@@ -487,7 +534,8 @@ int main(int argc, char *argv[])
     // adjustPose();
     // testPLY();
     //main2();
-    main3();
+    //main3();
+    main4();
     // testIO();
     // testOBJ();
     return 0;
