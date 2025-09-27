@@ -95,7 +95,7 @@ public:
         t = _t;
     }
 
-    Pose3D inversed()
+    Pose3D inversed() const
     {
         Pose3D pose{};
         pose.setR(R.transpose());

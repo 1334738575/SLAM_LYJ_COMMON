@@ -25,10 +25,13 @@ void Thread::start()
         m_taskFors.pop();
         lck.unlock();
         //run
+        //std::cout << "thread " << m_id << " run task start!" << std::endl;
         func();
         //finish
-        std::lock_guard<std::mutex> lck2(m_mtx2);
+        //std::lock_guard<std::mutex> lck2(m_mtx2);
         m_isFinish = true;
+        //std::cout << "thread " << m_id << " run task finish " << m_isFinish << std::endl;
+        break;
         //if (m_mtx == nullptr)
         //    continue;
         ////take
@@ -48,22 +51,31 @@ void Thread::start()
     }
     
 }
-int Thread::getIdInner(){
-    return m_id;
+void Thread::addTask(Task _task)
+{
+    std::lock_guard<std::mutex> lck(m_mtxFor);
+    m_taskFors.push(_task);
+    //std::cout << "add task " << m_id << std::endl;
+    m_conFor.notify_all(); //notify_one()，必须要有一个
 }
 void Thread::finish()
 {
+    //{
+    //    std::lock_guard<std::mutex> lck(m_mtx2);
+    //    m_toFinish = true;
+    //}
+    while (true)
     {
-        std::lock_guard<std::mutex> lck(m_mtx2);
-        m_toFinish = true;
+        {
+            std::lock_guard<std::mutex> lck2(m_mtx2);
+            if (m_isFinish)
+                break;
+        }
     }
-    while(true){
-        std::lock_guard<std::mutex> lck2(m_mtx2);
-        if (m_isFinish)
-            break;
-        _sleep(1);
-    }
+}
 
+int Thread::getIdInner(){
+    return m_id;
 }
 void Thread::run(TaskFor _task, uint64_t _s, uint64_t _e)
 {
@@ -89,11 +101,6 @@ void Thread::runWithId(TaskForWithId _task, uint64_t _s, uint64_t _e, uint32_t _
         m_isFinish = true;
     }
 }
-void Thread::addTask(Task _task)
-{
-    std::lock_guard<std::mutex> lck(m_mtxFor);
-    m_taskFors.push(_task);
-}
 
 
 
@@ -109,7 +116,8 @@ ThreadPool::ThreadPool(const int _threadNum)
 #endif
     m_thds.resize(m_threadNum, nullptr);
     for(int i=0;i<m_threadNum;++i){
-        m_thds[i] = new Thread(&m_tasks, &m_con, &m_mtx, i);
+        //m_thds[i] = new Thread(&m_tasks, &m_con, &m_mtx, i);
+        m_thds[i] = new Thread(nullptr, nullptr, nullptr, i);
         m_thds[i]->detach();
     }
 }
@@ -145,6 +153,7 @@ void ThreadPool::finish()
     for(int i=0;i<m_threadNum;++i)
     {
         m_thds[i]->finish();
+        //std::cout << "finishing thread: " << i << std::endl;
 #ifdef SYS_DEBUG
         std::cout<<"finishing thread: " <<i << std::endl;
 #endif
@@ -173,21 +182,25 @@ void ThreadPool::process(TaskFor _task, uint64_t _s, uint64_t _e)
 	uint64_t end = start + block;
 	for (int i = 0; i < m_threadNum; ++i)
 	{
-		if (i == m_threadNum - 1)
-			end += remain;
-		//auto func = [_task, start, end]() {
-		//	_task(start, end);
-		//	};
+		auto func = [_task, start, end]() {
+			_task(start, end);
+			};
 		//addTask(func);
-        m_thds[i]->run(_task, start, end);
-		start = end;
-		end = start + block;
+        //m_thds[i]->run(_task, start, end);
+        m_thds[i]->addTask(func);
+        start = end;
+        if (i == m_threadNum - 1)
+            end += remain;
+        else
+		    end = start + block;
 	}
 	finish();
 }
 
 void ThreadPool::processWithId(TaskForWithId _task, uint64_t _s, uint64_t _e)
 {
+    if (_s == _e)
+        return;
     if (m_threadNum <= 1)
     {
         _task(_s, _e, 0);
@@ -200,8 +213,10 @@ void ThreadPool::processWithId(TaskForWithId _task, uint64_t _s, uint64_t _e)
     uint64_t end = start + block;
     for (int i = 0; i < m_threadNum; ++i)
     {
-        if (i == m_threadNum - 1)
-            end += remain;
+        if (i < remain)
+            ++end;
+        if (start == end)
+            continue;
         auto func = [_task, start, end, i]() {
         	_task(start, end, i);
         	};

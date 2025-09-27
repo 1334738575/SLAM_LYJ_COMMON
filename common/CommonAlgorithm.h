@@ -5,6 +5,10 @@
 
 NSP_SLAM_LYJ_MATH_BEGIN
 
+bool SLAM_LYJ_API computeLineByPCA(const std::vector<Eigen::Vector3d>& _pts, Eigen::Vector3d& _p0, Eigen::Vector3d& _dir);
+
+bool SLAM_LYJ_API computePlaneByPCA(const std::vector<Eigen::Vector3d>& _pts, Eigen::Vector3d& _n, Eigen::Vector3d& _p0);
+
 // Rodrigues£¬Rwc£¬theta is inclocked
 template <typename T>
 static Eigen::Matrix<T, 3, 3> Rodrigues2RotMatrix(const Eigen::Matrix<T, 3, 1> &_r, const T _theta)

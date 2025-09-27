@@ -28,7 +28,8 @@ public:
     ~CameraModule() {}
 
     // 物理到图像
-    virtual void world2Image(const Eigen::Vector3d &_P, Eigen::Vector2d &_p) const = 0;
+    virtual void world2Image(const Eigen::Vector3d& _P, Eigen::Vector2d& _p) const = 0;
+    virtual void world2Image(const Eigen::Vector3f &_P, Eigen::Vector2f &_p) const = 0;
     virtual void world2Image(const Eigen::Vector3d &_P, double &_u, double &_v) const = 0;
     // 图像到物理
     virtual void image2World(const Eigen::Vector2d &_p, const double _d, Eigen::Vector3d &_P) const = 0;
@@ -118,6 +119,11 @@ public:
     void world2Image(const Eigen::Vector3d &_P, Eigen::Vector2d &_p) const
     {
         world2Image(_P, _p(0), _p(1));
+    }
+    void world2Image(const Eigen::Vector3f& _P, Eigen::Vector2f& _p) const
+    {
+        _p(0) = fx() * _P(0) / _P(2) + cx();
+        _p(1) = fy() * _P(1) / _P(2) + cy();
     }
     // override
     void world2Image(const Eigen::Vector3d &_P, double &_u, double &_v) const
