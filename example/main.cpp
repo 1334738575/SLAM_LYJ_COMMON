@@ -25,6 +25,8 @@
 
 #include <IO/MeshIO.h>
 
+#include <nlohmann/json.hpp>
+
 #include <vector>
 #include <string>
 #include <stdexcept>
@@ -527,6 +529,34 @@ int main4() {
     return 0;
 }
 
+void testJson()
+{
+    using json = nlohmann::json;
+    json jsonData;
+    jsonData["name"] = "lyj";
+    jsonData["age"] = 27;
+    jsonData["job"] = "algorithm engeneer";
+    jsonData["skills"] = { "C++", "Python", "C" };
+    jsonData["score"]["math"] = 100;
+    jsonData["score"]["english"] = 80;
+    std::ofstream fJson("D:/tmp/test.json", std::ios::binary);
+    fJson << jsonData.dump(4); //美化输出，缩进4个空格
+    fJson.close();
+
+    std::ifstream fJsonIn("D:/tmp/test.json", std::ios::binary);
+    json jsonDataIn;
+    fJsonIn >> jsonDataIn;
+    fJsonIn.close();
+    std::cout << jsonDataIn.dump(4) << std::endl;
+    std::cout << jsonDataIn["name"] << std::endl;
+    std::cout << jsonDataIn["age"] << std::endl;
+    std::cout << jsonDataIn["skills"] << std::endl;
+    std::cout << jsonDataIn["skills"][0] << std::endl;
+    std::cout << jsonDataIn["score"] << std::endl;
+    std::cout << jsonDataIn["score"]["math"] << std::endl;
+    return;
+}
+
 int main(int argc, char *argv[])
 {
     std::cout << "Hello COMMON_LYJ" << std::endl;
@@ -535,8 +565,9 @@ int main(int argc, char *argv[])
     // testPLY();
     //main2();
     //main3();
-    main4();
+    //main4();
     // testIO();
     // testOBJ();
+    testJson();
     return 0;
 }

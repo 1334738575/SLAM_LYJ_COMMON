@@ -106,7 +106,7 @@ protected:
 class RANSACLine3f : public RANSAC<Eigen::Vector3f, float, Line3f>
 {
 public:
-	RANSACLine3f(const double _errTh, const double _lenTh, 
+	RANSACLine3f(const double _errTh, const double _lenTh,
 		const double _inlineRatioTh, const int _minInlineNum,
 		const int _maxIterNum = INT32_MAX, const double _dstInlineRatioTh = 0.99, const double _stopRatio = 1.0);
 	~RANSACLine3f() {};
@@ -118,12 +118,13 @@ protected:
 protected:
 	double m_errTh = 0.01;
 	double m_lenTh = 0;
-}
+};
+
 template<typename ERRORTYPE, typename MODULE>
 class RANSACWithInd
 {
 public:
-	typedef std::function<bool(const MODULE& mdl, const std::vector<int>& datas, std::vector<ERRORTYPE>& errs, std::vector<bool>& bInls)> FuncCalErrors;
+	typedef std::function<int(const MODULE& mdl, const std::vector<int>& datas, std::vector<ERRORTYPE>& errs, std::vector<bool>& bInls)> FuncCalErrors;
 	typedef std::function<bool(const std::vector<int>& samples, MODULE& mdl)> FuncCalModule;
 	RANSACWithInd(const double _preInlineRatio, const int _minNum2Solve,
 		const int _maxIterNum = INT32_MAX, const double _dstSampleRatioTh = 0.99, const double _minRatio = 0.6)
@@ -147,7 +148,7 @@ public:
 		std::vector<int> datas(_dataSize);
 		int indTmp = 0;
 		std::generate(datas.begin(), datas.end(), [&indTmp]{ return indTmp++;});
-		run(datas, _errs, _bInlines, _mdl, _bestSample);
+		return run(datas, _errs, _bInlines, _mdl, _bestSample);
 	}
 	double run(const std::vector<int>& _datas, std::vector<ERRORTYPE>& _errs, std::vector<bool>& _bInlines, MODULE& _mdl, std::vector<int>& _bestSample) {
 		const int dataSize = (int)_datas.size();
@@ -162,11 +163,11 @@ public:
 		MODULE mdl;
 		int bestI = -1;
 		for (int i = 0; i < m_maxIterNum; ++i) {
-			const std::vector<int>& inds = allSamples[i];
+			const std::vector<int>& inds = allSamples[i]; 
 			if (inds[0] == -1)
 				continue;
 			double rat = runOnce(_datas, inds, errs, bInlines, mdl);
-			if(rat < _minRatio)
+			if(rat < m_minRatio)
 				continue;
 			if (rat <= bestRatio)
 				continue;
@@ -181,7 +182,7 @@ public:
 		return bestRatio;
 	}
 
-private:
+protected:
 	void generateAllSamples(const int _allSize, const int _eveSize, std::vector<std::vector<int>>& _allSamples) {
 		randIndexGroup(_allSize, _eveSize, m_maxIterNum, _allSamples);
 	}
@@ -194,10 +195,10 @@ private:
 			return 0.0;
 		}
 		int validCnt = m_funcCalErrs(_mdl, _datas, _errs, _bInlines);
-		return static_cast<double>(validCnt)/static_cast<double>(dataSize);
+		return static_cast<double>(validCnt)/static_cast<double>(_datas.size());
 	}
 
-private:
+protected:
 	double m_minRatio = 1;
 	int m_maxIterNum = INT32_MAX;
 	int m_minNum2Solve = INT32_MAX;
