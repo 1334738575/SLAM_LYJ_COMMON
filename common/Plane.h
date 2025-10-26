@@ -35,19 +35,33 @@ struct Plane3
 	// 三点确定一个平面 a(x-x0)+b(y-y0)+c(z-z0)=0  --> ax + by + cz + d = 0   d = -(ax0 + by0 + cz0)
 	// 平面通过点（x0,y0,z0）以及垂直于平面的法线（a,b,c）来得到
 	// (a,b,c)^T = vector(AO) cross vector(BO)
-	// d = O.dot(cross(AO,BO))
+	// d = O.dot(cross(AO,BO)) //有问题，原点不一定在平面上
 	// */
 	//Plane3(const TemVec3& x1, const TemVec3& x2, const TemVec3& x3) {
 	//	params << (x1 - x3).cross(x2 - x3), -x3.dot(x1.cross(x2)); // d = - x3.dot( (x1-x3).cross( x2-x3 ) ) = - x3.dot( x1.cross( x2 ) )
 	//	TemVec3 c = (x1 + x2 + x3) / 3;
 	//}
 	void update(TemVec3 _n, const TemVec3& _c) {
+		if (_n.norm() < 1e-6) {
+			reset();
+			return;
+		}
 		_n.normalize();
 		params(3) = -1 * _c.dot(_n);
 		params(0) = _n(0);
 		params(1) = _n(1);
 		params(2) = _n(2);
 		center = _c;
+	}
+	void reset() {
+		params = TemVec4::Zero();
+		center = TemVec3::Zero();
+	}
+	bool isValid() {
+		if (params.block(0,0,3,1).norm() < 1e-6) {
+			return false;
+		}
+		return true;
 	}
 
 	TemVec3 dir() {

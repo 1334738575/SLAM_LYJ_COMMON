@@ -5,6 +5,7 @@
 
 #include "common/CommonAlgorithm.h"
 #include "common/Line.h"
+#include "base/CameraModule.h"
 
 NSP_SLAM_LYJ_MATH_BEGIN
 
@@ -163,7 +164,8 @@ public:
 		MODULE mdl;
 		int bestI = -1;
 		for (int i = 0; i < m_maxIterNum; ++i) {
-			const std::vector<int>& inds = allSamples[i]; 
+			//const std::vector<int>& inds = allSamples[i]; 
+			std::vector<int> inds{ 0,1,2,3 };
 			if (inds[0] == -1)
 				continue;
 			double rat = runOnce(_datas, inds, errs, bInlines, mdl);
@@ -178,7 +180,7 @@ public:
 			bestI = i;
 		}
 		if(bestI != -1)
-			_bestSample = allSamples[bestI];
+			_bestSample = allSamples[bestI]; 
 		return bestRatio;
 	}
 
@@ -206,6 +208,54 @@ protected:
 	FuncCalModule m_funcCalModule = nullptr;
 };
 
+
+class RANSACLine3DWithLine2D : public RANSACWithInd<double, Eigen::Matrix<double, 6, 1>>
+{
+public:
+	using T = double;
+	using MDL = Eigen::Matrix<double, 6, 1>;
+public:
+	RANSACLine3DWithLine2D(const std::vector<std::pair<Pose3D, Eigen::Vector4d>>& _datas,
+		std::vector<PinholeCamera>& _cams,
+		float _errTh,
+		const double _preInlineRatio, const int _minNum2Solve,
+		const int _maxIterNum = INT32_MAX, const double _dstSampleRatioTh = 0.99, const double _minRatio = 0.6)
+		:SLAM_LYJ::SLAM_LYJ_MATH::RANSACWithInd<double, Eigen::Matrix<double, 6, 1>>(_preInlineRatio, _minNum2Solve, _maxIterNum, _dstSampleRatioTh, _minRatio), m_errTh(_errTh), m_datas(_datas), m_cams(_cams)
+	{
+		m_funcCalErrs = std::bind(&RANSACLine3DWithLine2D::calErr, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+		m_funcCalModule = std::bind(&RANSACLine3DWithLine2D::calMdl, this, std::placeholders::_1, std::placeholders::_2);
+		m_Tcws.resize(_datas.size());
+		m_KKs.resize(_datas.size());
+		for (size_t i = 0; i < _datas.size(); ++i)
+		{
+			m_Tcws[i] = _datas[i].first.inversed();
+			m_KKs[i] = Line3d::convertK2KK(_cams[i].getK());
+		}
+	}
+	~RANSACLine3DWithLine2D() {};
+
+	static bool getPlaneFromLine2D(
+		const Pose3D& _Twc, const Eigen::Vector4d& _l2d, const PinholeCamera& _cam,
+		Eigen::Vector4d& _plane
+	);
+	static bool triLine3DWithLine2D(
+		const Pose3D& _Twc1, const Eigen::Vector4d& _l2d1, const PinholeCamera& _cam1,
+		const Pose3D& _Twc2, const Eigen::Vector4d& _l2d2, const PinholeCamera& _cam2,
+		MDL& _plk
+		);
+
+protected:
+
+	int calErr(const MDL& _mdl, const std::vector<int>& _datas, std::vector<T>& _errs, std::vector<bool>& _bInls);
+	bool calMdl(const std::vector<int>& _samples, MDL& _mdl);
+
+protected:
+	float m_errTh = 2;
+	std::vector<std::pair<Pose3D, Eigen::Vector4d>> m_datas;//Twc, l2d
+	std::vector<Pose3D> m_Tcws;
+	std::vector<Eigen::Matrix3d> m_KKs;
+	std::vector<PinholeCamera> m_cams;
+};
 
 
 NSP_SLAM_LYJ_MATH_END

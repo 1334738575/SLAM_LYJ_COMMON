@@ -97,17 +97,23 @@ public:
 
     Pose3D inversed() const
     {
-        Pose3D pose{};
-        pose.setR(R.transpose());
-        pose.sett(-1 * pose.getR() * t);
+        Pose3D pose = *this;
+        pose.inverse();
         return pose;
     }
     // 注意eigen的延迟更新
     void inverse()
     {
-        Eigen::Matrix3d RTmp = R.inverse();
-        R = RTmp;
-        t = -1 * R * t;
+        Eigen::Matrix3d Rinv = R.transpose();
+        Eigen::JacobiSVD<Eigen::Matrix3d> svd(Rinv, Eigen::ComputeFullU | Eigen::ComputeFullV);
+        Eigen::Matrix3d U = svd.matrixU();
+        Eigen::Matrix3d V = svd.matrixV();
+        R = U * V.transpose();
+        // 确保行列式为1
+        if (R.determinant() < 0)
+            R.col(2) *= -1.0; // 反转第三列
+        Eigen::Vector3d tinv = -1 * R * t;
+        t = tinv;
     }
 
     Eigen::Vector3d operator*(const Eigen::Vector3d &_P) const

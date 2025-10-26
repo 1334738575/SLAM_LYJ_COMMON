@@ -7,7 +7,7 @@
 
 NSP_SLAM_LYJ_BEGIN
 
-struct TriangleOption
+struct Point3DTriangleOption
 {
     double ransacPriorInlineRatio = 0.5;
     double ransacDstRatioTh = 0.99;
@@ -18,11 +18,11 @@ struct TriangleOption
 };
 
 template <typename TYPE>
-class Triangler
+class Point3DTriangler
 {
 private:
     /* data */
-    TriangleOption m_option;
+    Point3DTriangleOption m_option;
 
 public:
     using TemVec2 = Eigen::Matrix<TYPE, 2, 1>;
@@ -34,11 +34,11 @@ public:
     using TemMat34 = Eigen::Matrix<TYPE, 3, 4>;
     using TemMat44 = Eigen::Matrix<TYPE, 4, 4>;
 
-    Triangler(const TriangleOption &_option)
+    Point3DTriangler(const Point3DTriangleOption &_option)
         : m_option(_option)
     {
     }
-    ~Triangler() {}
+    ~Point3DTriangler() {}
 
     bool runDirect(const std::vector<TemVec2> &_uvs, const std::vector<TemMat34> &_Tcws, const std::vector<TemMat33> &_Ks,
                    TemVec3 &_Pw)
@@ -158,8 +158,8 @@ public:
     }
 };
 
-typedef Triangler<float> Trianglerf;
-typedef Triangler<double> Trianglerd;
+typedef Point3DTriangler<float> Trianglerf;
+typedef Point3DTriangler<double> Trianglerd;
 
 NSP_SLAM_LYJ_END
 

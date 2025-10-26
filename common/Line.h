@@ -78,6 +78,12 @@ struct Line2 {
         params(1) = dir(0);
         params(2) = -params(0) * ps(0) - params(1) * ps(1);
     }
+    bool isValid()
+    {
+        if (length < le - 6)
+            return false;
+        return true;
+    }
 
     TemVec2 dir() const {
         return TemVec2(params(1), -params(0));
@@ -168,6 +174,47 @@ struct Line2 {
     //2D线正交转普吕克
 
 
+    //光栅化 bresenham
+    static void bresenhamLine(TYPE _x0, TYPE _y0, TYPE _x1, TYPE _y1, std::vector<Eigen::Vector2i>& _ps)
+    {
+        int x0 = static_cast<int>(_x0);
+        int y0 = static_cast<int>(_y0);
+        int x1 = static_cast<int>(_x1);
+        int y1 = static_cast<int>(_y1);
+        _ps.clear();
+        // 确保起点x0 < x1
+        if (x0 > x1)
+        {
+            int tmpX = x0;
+            x0 = x1;
+            x1 = tmpX;
+
+            int tmpy = y0;;
+            y0 = y1;
+            y1 = tmpy;
+        }
+        int dx = x1 - x0, sx = 1;
+        int dy = abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+        int e_xy = dx - dy; // 这里的e_xy 其实是F(x+1,y+sy)
+        while (true)
+        {
+            _ps.emplace_back(x0, y0);
+            int e2 = 2 * e_xy;
+            if (e2 >= -dy)
+            {   // 等价于判断 F(x+1,y+sy) + F(x,y+sy) > 0; F(x,y+sy) = e_xy + dy
+                if (x0 == x1)
+                    break;
+                e_xy += -dy; x0 += sx;
+            }
+            if (e2 <= dx)
+            {	// 等价于判断 F(x+1,y+sy) + F(x+1,y) > 0; F(x+1,y) = e_xy - dx
+                if (y0 == y1)
+                    break;
+                e_xy += dx; y0 += sy;
+            }
+        }
+    }
+
     void write_binary(std::ofstream& os) {
         os.write(reinterpret_cast<const char*>(params), sizeof(TYPE) * 3);
         os.write(reinterpret_cast<const char*>(ps), sizeof(TYPE) * 4);
@@ -192,42 +239,6 @@ struct Line2 {
 typedef Line2<double> Line2d;
 typedef Line2<float> Line2f;
 
-//光栅化 bresenham
-static void bresenhamLine(int x0, int y0, int x1, int y1, std::vector<Eigen::Vector2i>& _ps)
-{
-    _ps.clear();
-    // 确保起点x0 < x1
-    if (x0 > x1)
-    {
-        int tmpX = x0;
-        x0 = x1;
-        x1 = tmpX;
-
-        int tmpy = y0;;
-        y0 = y1;
-        y1 = tmpy;
-    }
-    int dx = x1 - x0, sx = 1;
-    int dy = abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-    int e_xy = dx - dy; // 这里的e_xy 其实是F(x+1,y+sy)
-    while (true)
-    {
-        _ps.emplace_back(x0, y0);
-        int e2 = 2 * e_xy;
-        if (e2 >= -dy)
-        {   // 等价于判断 F(x+1,y+sy) + F(x,y+sy) > 0; F(x,y+sy) = e_xy + dy
-            if (x0 == x1)
-                break;
-            e_xy += -dy; x0 += sx;
-        }
-        if (e2 <= dx)
-        {	// 等价于判断 F(x+1,y+sy) + F(x+1,y) > 0; F(x+1,y) = e_xy - dx
-            if (y0 == y1)
-                break;
-            e_xy += dx; y0 += sy;
-        }
-    }
-}
 
 
 
@@ -272,6 +283,13 @@ struct Line3 {
         dir /= length;
         dir.normalize();
     }
+    bool isValid()
+    {
+        if (length < le - 6)
+            return false;
+        return true;
+    }
+
     //点到直线的距离，带符号
     TYPE distP2L(const TemVec3& _p) const {
         return (_p - pointInL(_p)).norm();
@@ -361,7 +379,7 @@ struct Line3 {
     static TemVec6 linePN_to_plk(const TemVec3& p, const TemVec3& v)
     {
         TemVec6 plk;
-        TemVec3 vNorm = v.normalize();
+        TemVec3 vNorm = v.normalized();
         plk.block(0, 0, 3, 1) = p.cross(vNorm);
         plk.block(3, 0, 3, 1) = vNorm;
         return plk;
@@ -531,6 +549,19 @@ struct Line3 {
         TemMat33 Rwc = Rcw.transpose();
         TemVec3 twc = -Rwc * tcw;
         return plk_to_pose(plk_c, Rwc, twc);
+    }
+
+    static TemMat33 convertK2KK(const TemMat33& _K)
+    {
+        const TYPE& fx = _K(0, 0);
+        const TYPE& fy = _K(1, 1);
+        const TYPE& cx = _K(0, 2);
+        const TYPE& cy = _K(1, 2);
+        TemMat33 KK = TemMat33::Zero();
+        TemMat33 KK2 = _K.inverse();
+        KK = KK2.transpose();
+        KK *= (fx*fy);
+        return KK;
     }
 
 

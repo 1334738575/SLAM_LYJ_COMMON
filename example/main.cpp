@@ -24,6 +24,7 @@
 #include <common/FlannSearch.h>
 
 #include <IO/MeshIO.h>
+#include <IO/SimpleIO.h>
 
 #include <nlohmann/json.hpp>
 
@@ -32,6 +33,11 @@
 #include <stdexcept>
 #include <algorithm>
 #include <cstdint>
+
+#include <Eigen/Core>
+#include <Eigen/Eigen>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 
 void testDefine()
 {
@@ -43,8 +49,8 @@ void testDefine()
     SLAM_LYJ::PinholeCamera cam(100, 100, std::vector<double>{1, 1, 1, 1});
     SLAM_LYJ::Pose3D pose3D;
     std::cout << LYJOPT->sysHomePath << std::endl;
-    SLAM_LYJ::TriangleOption triOpt;
-    SLAM_LYJ::Triangler<double> triangler(triOpt);
+    SLAM_LYJ::Point3DTriangleOption triOpt;
+    SLAM_LYJ::Point3DTriangler<double> triangler(triOpt);
 
     SLAM_LYJ::SLAM_LYJ_MATH::Cloud cld;
     SLAM_LYJ::SLAM_LYJ_MATH::Grid<float, 2> grid;
@@ -557,6 +563,331 @@ void testJson()
     return;
 }
 
+void genData()
+{
+    COMMON_LYJ::drawCube("D:/tmp/cube2.ply", 1, 2, 3);
+    // 定义三个相机位姿 [R|t]
+    std::vector<std::pair<Eigen::Matrix3d, Eigen::Vector3d>> poses = {
+        {   // 正面视角
+            Eigen::AngleAxisd(0, Eigen::Vector3d::UnitY()).toRotationMatrix(),
+            Eigen::Vector3d(0, 0, -5)
+        },
+        {   // 右侧视角
+            Eigen::AngleAxisd(PI / 8, Eigen::Vector3d::UnitY()).toRotationMatrix(),
+            Eigen::Vector3d(-3, 0, -5)
+        },
+        {   // 俯视视角
+            Eigen::AngleAxisd(-PI / 8, Eigen::Vector3d::UnitX()).toRotationMatrix(),
+            Eigen::Vector3d(0, -2, -5)
+        }
+    };
+    SLAM_LYJ::Pose3D Twc1(poses[0].first, poses[0].second);
+    SLAM_LYJ::Pose3D Twc2(poses[1].first, poses[1].second);
+    SLAM_LYJ::Pose3D Twc3(poses[2].first, poses[2].second);
+    struct CameraIntrinsics {
+        double fx = 500.0, fy = 500.0; // 焦距
+        double cx = 320.0, cy = 240.0; // 主点
+        int width = 640, height = 480; // 图像尺寸
+    };
+    CameraIntrinsics intri;
+    SLAM_LYJ::PinholeCamera cam(intri.width, intri.height, intri.fx, intri.fy, intri.cx, intri.cy);
+    COMMON_LYJ::drawCam("D:/tmp/Twc1.ply", cam, Twc1, 10);
+    COMMON_LYJ::drawCam("D:/tmp/Twc2.ply", cam, Twc2, 10);
+    COMMON_LYJ::drawCam("D:/tmp/Twc3.ply", cam, Twc3, 10);
+}
+
+#define PI 3.14159265358979323846
+using namespace Eigen;
+//using namespace SLAM_LYJ;
+// 定义三维点和二维点结构体
+struct Point3D { Vector3d coord; };
+struct Point2D { Vector2d coord; };
+struct Line3D { int from, to; };  // 边的起点和终点索引
+struct Line2D { Point2D p1, p2; };
+// 相机内参结构体（简化版）
+struct CameraIntrinsics {
+    double fx = 500.0, fy = 500.0; // 焦距
+    double cx = 320.0, cy = 240.0; // 主点
+    int width = 640, height = 480; // 图像尺寸
+};
+// 生成立方体顶点和边
+void generate_cuboid(double _b, double _l, double _w, double _h, std::vector<Point3D>& vertices, std::vector<Line3D>& edges) {
+    vertices.resize(8);
+    double l = _l / 2.0;
+    double w = _w / 2.0;
+    double h = _h / 2.0;
+    double bias = 0;
+    // 立方体顶点（中心在原点）
+    vertices[0].coord << -l + _b, -w + _b, -h + _b;
+    vertices[1].coord << l + _b, -w + _b, -h + _b;
+    vertices[2].coord << l + _b, w + _b, -h + _b;
+    vertices[3].coord << -l + _b, w + _b, -h + _b;
+    vertices[4].coord << -l + _b, -w + _b, h + _b;
+    vertices[5].coord << l + _b, -w + _b, h + _b;
+    vertices[6].coord << l + _b, w + _b, h + _b;
+    vertices[7].coord << -l + _b, w + _b, h + _b;
+
+    // 定义12条边
+    edges = { {0,1}, {1,2}, {2,3}, {3,0},
+             {4,5}, {5,6}, {6,7}, {7,4},
+             {0,4}, {1,5}, {2,6}, {3,7} };
+}
+// 将世界坐标点变换到相机坐标系
+Vector3d transform_to_camera(const Vector3d& point,
+    const Matrix3d& R, const Vector3d& t) {
+    return R.transpose() * (point - t);
+}
+// 投影三维点到图像平面
+bool project_point(const Vector3d& p_cam, Point2D& p_pixel,
+    const CameraIntrinsics& cam) {
+    if (p_cam.z() <= 0) return false; // 深度为负，不可见
+
+    // 透视投影
+    double u = (cam.fx * p_cam.x() / p_cam.z()) + cam.cx;
+    double v = (cam.fy * p_cam.y() / p_cam.z()) + cam.cy;
+
+    // 检查是否在图像范围内
+    if (u < 0 || u >= cam.width || v < 0 || v >= cam.height)
+        return false;
+
+    p_pixel.coord << u, v;
+    //p_pixel.coord << p_cam.x() / p_cam.z(), p_cam.y() / p_cam.z();
+    return true;
+}
+// 主函数：生成三个位姿下的二维线观测
+int genLineData(std::vector<SLAM_LYJ::Pose3D>& _Twcs, std::vector<SLAM_LYJ::Line3d>& _lines, std::vector<std::vector<SLAM_LYJ::Line2d>>& _allObs, double _bT, double _bl, SLAM_LYJ::PinholeCamera& _cam) {
+    // 创建边长为2的立方体
+    std::vector<Point3D> vertices;
+    std::vector<Line3D> edges_3d;
+    generate_cuboid(_bl, 1.0, 2.0, 3.0, vertices, edges_3d);
+
+    _lines.resize(edges_3d.size());
+    for (int i = 0; i < edges_3d.size(); ++i)
+    {
+        const Line3D& edge = edges_3d[i];
+        const Vector3d& p1 = vertices[edge.from].coord;
+        const Vector3d& p2 = vertices[edge.to].coord;
+		std::cout << "(" << p1(0) << ", " << p1(1) << ", " << p1(2) << ") -> ("
+			<< p2(0) << ", " << p2(1) << ", " << p2(2) << ")\n";
+        _lines[i] = SLAM_LYJ::Line3d(p1, p2);
+    }
+
+    // 定义三个相机位姿 [R|t] Twc
+    std::vector<std::pair<Matrix3d, Vector3d>> poses = {
+        {   // 正面视角
+            AngleAxisd(0 + _bT, Vector3d::UnitY()).toRotationMatrix(),
+            Vector3d(0, 0, -5)
+        },
+        {   // 右侧视角
+            AngleAxisd(PI / 8 + _bT, Vector3d::UnitY()).toRotationMatrix(),
+            Vector3d(-3, 0, -5)
+        },
+        {   // 俯视视角
+            AngleAxisd(-PI / 8 - _bT, Vector3d::UnitX()).toRotationMatrix(),
+            Vector3d(0, -2, -5)
+        }
+    };
+    _Twcs.resize(poses.size());
+    for (int i = 0; i < poses.size(); ++i)
+    {
+        _Twcs[i].setR(poses[i].first);
+        _Twcs[i].sett(poses[i].second);
+    }
+
+    CameraIntrinsics cam{ _cam.fx(), _cam.fy(), _cam.cx(), _cam.cy(), _cam.wide(), _cam.height()}; // 使用默认内参
+
+    _allObs.resize(poses.size());
+    for (size_t pose_idx = 0; pose_idx < poses.size(); ++pose_idx) {
+        auto& [R, t] = poses[pose_idx];
+        std::vector<Line2D> visible_lines;
+
+        // 处理每条3D边
+        _allObs[pose_idx].resize(edges_3d.size());
+        int cnt = 0;
+        for (const Line3D& edge : edges_3d) {
+            // 变换起点和终点到相机坐标系
+            Vector3d p1_cam = transform_to_camera(
+                vertices[edge.from].coord, R, t);
+            Vector3d p2_cam = transform_to_camera(
+                vertices[edge.to].coord, R, t);
+
+            // 投影到图像平面
+            Point2D p1_pixel, p2_pixel;
+            bool visible1 = project_point(p1_cam, p1_pixel, cam);
+            bool visible2 = project_point(p2_cam, p2_pixel, cam);
+
+            // 仅当两端点均可见时才保留该边
+            if (visible1 && visible2) {
+                visible_lines.push_back({ p1_pixel, p2_pixel });
+                _allObs[pose_idx][cnt] = SLAM_LYJ::Line2d(
+                    Eigen::Vector2d(p1_pixel.coord.x(), p1_pixel.coord.y()),
+                    Eigen::Vector2d(p2_pixel.coord.x(), p2_pixel.coord.y())
+                );
+            }
+            else {
+                _allObs[pose_idx][cnt] = SLAM_LYJ::Line2d();
+            }
+            ++cnt;
+        }
+
+        // 输出当前位姿的观测结果
+        std::cout << "Pose " << pose_idx + 1 << "观测到 "
+            << visible_lines.size() << " 条线段:\n";
+        for (const Line2D& line : visible_lines) {
+        	std::cout << " 线段: (" << line.p1.coord.x() << ", "
+        		<< line.p1.coord.y() << ") -> ("
+        		<< line.p2.coord.x() << ", "
+        		<< line.p2.coord.y() << ")\n";
+        }
+    }
+
+    return 0;
+}
+void testTriLine3D()
+{
+    double fx = 500;
+    double fy = 500;
+    double cx = 320;
+    double cy = 240;
+    int w = 640;
+    int h = 480;
+    Eigen::Matrix3d K;
+    K << fx, 0, cx,
+        0, fy, cy,
+        0, 0, 1;
+    SLAM_LYJ::PinholeCamera cam(w, h, fx, fy, cx, cy);
+    Eigen::Matrix3d KK = SLAM_LYJ::SLAM_LYJ_MATH::Line3d::convertK2KK(K);
+    std::vector<SLAM_LYJ::Pose3D> tTwcs;
+    std::vector<SLAM_LYJ::Line3d> tline3Dws;
+    std::vector<std::vector<SLAM_LYJ::Line2d>> allObs;
+    genLineData(tTwcs, tline3Dws, allObs, 0, 0, cam);
+    std::vector<SLAM_LYJ::Pose3D> Tcws(tTwcs.size());
+    for (size_t i = 0; i < tTwcs.size(); i++)
+    {
+        Tcws[i] = tTwcs[i].inversed();
+        //Tcws[i] = tTwcs[i];
+        //Tcws[i].inverse();
+    }
+
+    for (int i = 0; i < allObs[0].size(); ++i)
+    {
+        const auto& l2d1 = allObs[0][i];
+        const auto& l2d2 = allObs[1][i];
+        const auto& l2d3 = allObs[2][i];
+
+        Eigen::Vector3d pl = tline3Dws[i].sp;
+        Eigen::Vector3d p2 = tline3Dws[i].ep;
+        Eigen::Vector3d dir = tline3Dws[i].dir;
+        Eigen::Vector3d Pc1 = Tcws[0] * pl;
+        Eigen::Vector3d Pc2 = Tcws[0] * p2;
+        Eigen::Vector2d uv1;
+        Eigen::Vector2d uv2;
+        cam.world2Image(Pc1, uv1);
+        cam.world2Image(Pc2, uv2);
+        Eigen::Vector2d uv1t = l2d1.ps.block(0, 0, 2, 1);
+        Eigen::Vector2d uv2t = l2d1.ps.block(2, 0, 2, 1);
+        std::cout << (uv1 - uv1t) << std::endl;
+        std::cout << (uv2 - uv2t) << std::endl;
+
+        Eigen::Vector2d sp1 = l2d1.ps.head<2>();
+        Eigen::Vector2d ep1 = l2d1.ps.tail<2>();
+        Eigen::Vector3d spn1;
+        Eigen::Vector3d epn1;
+        cam.image2World(sp1, 10.0, spn1);
+        cam.image2World(ep1, 10.0, epn1);
+        Eigen::Vector3d pn1 = tTwcs[0] * spn1;
+        Eigen::Vector3d pn2 = tTwcs[0] * epn1;
+        Eigen::Vector3d pn3 = tTwcs[0].gett();
+        SLAM_LYJ::Plane3d pln1(pn1, pn2, pn3);
+        Eigen::Vector4d plane1 = pln1.params;
+        SLAM_LYJ::BaseTriMesh btm1;
+        btm1.addVertex(pn1.cast<float>());
+        btm1.addVertex(pn2.cast<float>());
+        btm1.addVertex(pn3.cast<float>());
+        btm1.addFace(SLAM_LYJ::BaseTriFace(0, 1, 2));
+        SLAM_LYJ::writePLYMesh("D:/tmp/pln1.ply", btm1);
+
+        Eigen::Vector2d sp2 = l2d2.ps.head<2>();
+        Eigen::Vector2d ep2 = l2d2.ps.tail<2>();
+        Eigen::Vector3d spn2;
+        Eigen::Vector3d epn2;
+        cam.image2World(sp2, 10.0, spn2);
+        cam.image2World(ep2, 10.0, epn2);
+        Eigen::Vector3d pn12 = tTwcs[1] * spn2;
+        Eigen::Vector3d pn22 = tTwcs[1] * epn2;
+        Eigen::Vector3d pn32 = tTwcs[1].gett();
+        SLAM_LYJ::Plane3d pln2(pn12, pn22, pn32);
+        Eigen::Vector4d plane2 = pln2.params;
+        SLAM_LYJ::BaseTriMesh btm2;
+        btm2.addVertex(pn12.cast<float>());
+        btm2.addVertex(pn22.cast<float>());
+        btm2.addVertex(pn32.cast<float>());
+        btm2.addFace(SLAM_LYJ::BaseTriFace(0, 1, 2));
+        SLAM_LYJ::writePLYMesh("D:/tmp/pln2.ply", btm2);
+
+        Eigen::Matrix<double, 6, 1> plkw = SLAM_LYJ::Line3d::pipi_plk(plane1, plane2);
+        if (plkw.tail<3>().squaredNorm() < 1e-6)
+            continue;
+        //plkw = SLAM_LYJ::Line3d::linePN_to_plk(pl, dir);
+        {
+            std::cout << plkw << std::endl << std::endl;
+            Eigen::Matrix<double, 6, 1> plkc = SLAM_LYJ::Line3d::plk_to_pose(plkw, Tcws[2].getR(), Tcws[2].gett());
+            std::cout << plkc << std::endl << std::endl;
+            Eigen::Matrix<double, 6, 1> plkw2 = SLAM_LYJ::Line3d::plk_to_pose(plkc, tTwcs[2].getR(), tTwcs[2].gett());
+            std::cout << plkw2 << std::endl << std::endl;
+            Eigen::Matrix<double, 6, 1> plkw3 = SLAM_LYJ::Line3d::plk_from_pose(plkc, Tcws[2].getR(), Tcws[2].gett());
+            std::cout << plkw3 << std::endl << std::endl;
+            SLAM_LYJ::Pose3D iT = Tcws[2] * tTwcs[2];
+            std::cout << iT << std::endl << std::endl;
+            Eigen::Vector3d l2d = KK * plkc.head<3>();
+            const auto& ps = l2d3.ps;
+            double l_norm = l2d(0) * l2d(0) + l2d(1) * l2d(1);
+            double l_sqrtnorm = sqrt(l_norm);
+            double e1 = ps(0) * l2d(0) + ps(1) * l2d(1) + l2d(2);
+            double e2 = ps(2) * l2d(0) + ps(3) * l2d(1) + l2d(2);
+            std::cout << e1 / l_sqrtnorm << " " << e2 / l_sqrtnorm << std::endl;
+            if ((e1 * e1 + e2 * e2) > 1e-10)
+            {
+                std::cout << "err!" << std::endl;
+            }
+        }
+
+        {
+            Eigen::Matrix<double, 6, 1> plkc = SLAM_LYJ::Line3d::plk_to_pose(plkw, Tcws[0].getR(), Tcws[0].gett());
+            Eigen::Vector3d l2d = KK * plkc.head<3>();
+            const auto& ps = l2d1.ps;
+            double l_norm = l2d(0) * l2d(0) + l2d(1) * l2d(1);
+            double l_sqrtnorm = sqrt(l_norm);
+            double e1 = ps(0) * l2d(0) + ps(1) * l2d(1) + l2d(2);
+            double e2 = ps(2) * l2d(0) + ps(3) * l2d(1) + l2d(2);
+            std::cout << e1 / l_sqrtnorm << " " << e2 / l_sqrtnorm << std::endl;
+            if ((e1 * e1 + e2 * e2) > 1e-10)
+            {
+                std::cout << "err!" << std::endl;
+            }
+        }
+
+        {
+            Eigen::Matrix<double, 6, 1> plkc = SLAM_LYJ::Line3d::plk_to_pose(plkw, Tcws[1].getR(), Tcws[1].gett());
+            Eigen::Vector3d l2d = KK * plkc.head<3>();
+            const auto& ps = l2d2.ps;
+            double l_norm = l2d(0) * l2d(0) + l2d(1) * l2d(1);
+            double l_sqrtnorm = sqrt(l_norm);
+            double e1 = ps(0) * l2d(0) + ps(1) * l2d(1) + l2d(2);
+            double e2 = ps(2) * l2d(0) + ps(3) * l2d(1) + l2d(2);
+            std::cout << e1 / l_sqrtnorm << " " << e2 / l_sqrtnorm << std::endl;
+            if ((e1 * e1 + e2 * e2) > 1e-10)
+            {
+                std::cout << "err!" << std::endl;
+            }
+        }
+
+        continue;
+    }
+    return;
+}
+
+
 int main(int argc, char *argv[])
 {
     std::cout << "Hello COMMON_LYJ" << std::endl;
@@ -568,6 +899,8 @@ int main(int argc, char *argv[])
     //main4();
     // testIO();
     // testOBJ();
-    testJson();
+    //testJson();
+    //genData();
+    testTriLine3D();
     return 0;
 }
