@@ -49,8 +49,8 @@ void testDefine()
     SLAM_LYJ::PinholeCamera cam(100, 100, std::vector<double>{1, 1, 1, 1});
     SLAM_LYJ::Pose3D pose3D;
     std::cout << LYJOPT->sysHomePath << std::endl;
-    SLAM_LYJ::Point3DTriangleOption triOpt;
-    SLAM_LYJ::Point3DTriangler<double> triangler(triOpt);
+    SLAM_LYJ::TrianglerPoint3DOption triOpt;
+    SLAM_LYJ::TrianglerLine3D triangler;
 
     SLAM_LYJ::SLAM_LYJ_MATH::Cloud cld;
     SLAM_LYJ::SLAM_LYJ_MATH::Grid<float, 2> grid;

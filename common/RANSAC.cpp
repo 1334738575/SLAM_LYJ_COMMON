@@ -73,18 +73,19 @@ int RANSACLine3DWithLine2D::calErr(const MDL& _mdl, const std::vector<int>& _dat
 	int validCnt = 0;
 	_errs.assign(_datas.size(), -1);
 	_bInls.assign(_datas.size(), false);
+	Eigen::Matrix<double, 6, 1> plkc;
+	Eigen::Vector3d l2d;
 	for (size_t i = 0; i < _datas.size(); ++i)
 	{
 		const auto& data = m_datas[_datas[i]];
-		const Pose3D Tcw = m_Tcws[_datas[i]];
-		Eigen::Matrix<double, 6, 1> plkc = Line3d::plk_to_pose(_mdl, Tcw.getR(), Tcw.gett());
-		Eigen::Vector3d l2d = m_KKs[_datas[i]] * plkc.head<3>();
-		const auto& ob = data.second;
-		const auto& ps = m_datas[_datas[i]].second;
+		const Pose3D& Tcw = data.first;
+		plkc = Line3d::plk_to_pose(_mdl, Tcw.getR(), Tcw.gett());
+		l2d = m_KKs[_datas[i]] * plkc.head<3>();
+		const auto& ps = data.second;
 		double e1 = ps(0) * l2d(0) + ps(1) * l2d(1) + l2d(2);
 		double e2 = ps(2) * l2d(0) + ps(3) * l2d(1) + l2d(2);
 		double l_sqrtnorm = sqrt(l2d(0) * l2d(0) + l2d(1) * l2d(1));
-		_errs[i] = (e1 + e2) / l_sqrtnorm;
+		_errs[i] = (abs(e1) + abs(e2)) / l_sqrtnorm;
 		if (_errs[i] < m_errTh)
 		{
 			_bInls[i] = true;
@@ -103,8 +104,8 @@ bool RANSACLine3DWithLine2D::calMdl(const std::vector<int>& _samples, MDL& _mdl)
 	_mdl.setZero();
 	if (_samples.size() < 2)
 		return false;
-	if(!triLine3DWithLine2D(m_datas[_samples[0]].first, m_datas[_samples[0]].second, m_cams[_samples[0]],
-		m_datas[_samples[1]].first, m_datas[_samples[1]].second, m_cams[_samples[1]],
+	if(!triLine3DWithLine2D(m_Twcs[_samples[0]], m_datas[_samples[0]].second, m_cams[_samples[0]],
+		m_Twcs[_samples[1]], m_datas[_samples[1]].second, m_cams[_samples[1]],
 		_mdl))
 		return false;
 	return true;
@@ -112,4 +113,85 @@ bool RANSACLine3DWithLine2D::calMdl(const std::vector<int>& _samples, MDL& _mdl)
 
 
 
+
+bool RANSACPoint3DWithPoint2D::triPoint3DWithPoint2D(
+	const Pose3D& _Tcw1, const Eigen::Vector2d& _p2d1, const PinholeCamera& _cam1, 
+	const Pose3D& _Tcw2, const Eigen::Vector2d& _p2d2, const PinholeCamera& _cam2, 
+	MDL& _p3d)
+{
+	//init
+	_p3d.setZero();
+	Eigen::Matrix<double, 3, 4> Tcw;
+	Eigen::Matrix4d A = Eigen::Matrix4d::Zero();
+	Eigen::Vector3d point;
+	Eigen::Matrix<double, 3, 4> term;
+
+	//construct
+	_cam1.image2World(_p2d1, 1, point);
+	point.normalize();
+	_Tcw1.getMatrix34d(Tcw);
+	term = Tcw - point * point.transpose() * Tcw;
+	A += term.transpose() * term;
+	_cam2.image2World(_p2d2, 1, point);
+	point.normalize();
+	_Tcw2.getMatrix34d(Tcw);
+	term = Tcw - point * point.transpose() * Tcw;
+	A += term.transpose() * term;
+
+	// solve
+	Eigen::SelfAdjointEigenSolver<Eigen::Matrix4d> eigen_solver(A);
+	_p3d = eigen_solver.eigenvectors().col(0).hnormalized();
+
+	// check
+	Eigen::Vector3d Pc = _Tcw1 * _p3d;
+	if (Pc(2) <= 0)
+		return false;
+	Pc = _Tcw2 * _p3d;
+	if (Pc(2) <= 0)
+		return false;
+	return true;
+}
+
+int RANSACPoint3DWithPoint2D::calErr(const MDL& _mdl, const std::vector<int>& _datas, std::vector<T>& _errs, std::vector<bool>& _bInls)
+{
+	int validCnt = 0;
+	_errs.assign(_datas.size(), -1);
+	_bInls.assign(_datas.size(), false);
+	Eigen::Vector3d Pc;
+	Eigen::Vector2d uv;
+	for (size_t i = 0; i < _datas.size(); ++i)
+	{
+		const auto& data = m_datas[_datas[i]];
+		const Pose3D& Tcw = data.first;
+		Pc = Tcw * _mdl;
+		m_cams[_datas[i]].world2Image(Pc, uv);
+		const auto& ob = data.second;
+		_errs[i] = (ob - uv).norm();
+		if (_errs[i] < m_errTh)
+		{
+			_bInls[i] = true;
+			validCnt++;
+		}
+		else
+		{
+			_bInls[i] = false;
+		}
+	}
+	return validCnt;
+}
+
+bool RANSACPoint3DWithPoint2D::calMdl(const std::vector<int>& _samples, MDL& _mdl)
+{
+	_mdl.setZero();
+	if (_samples.size() < 2)
+		return false;
+	if (!triPoint3DWithPoint2D(m_datas[_samples[0]].first, m_datas[_samples[0]].second, m_cams[_samples[0]],
+		m_datas[_samples[1]].first, m_datas[_samples[1]].second, m_cams[_samples[1]],
+		_mdl))
+		return false;
+	return true;
+}
+
+
 NSP_SLAM_LYJ_MATH_END
+

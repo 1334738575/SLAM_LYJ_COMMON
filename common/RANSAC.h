@@ -215,20 +215,21 @@ public:
 	using T = double;
 	using MDL = Eigen::Matrix<double, 6, 1>;
 public:
+	//Tcw, plk
 	RANSACLine3DWithLine2D(const std::vector<std::pair<Pose3D, Eigen::Vector4d>>& _datas,
-		std::vector<PinholeCamera>& _cams,
-		float _errTh,
+		const std::vector<PinholeCamera>& _cams,
+		T _errTh,
 		const double _preInlineRatio, const int _minNum2Solve,
 		const int _maxIterNum = INT32_MAX, const double _dstSampleRatioTh = 0.99, const double _minRatio = 0.6)
-		:SLAM_LYJ::SLAM_LYJ_MATH::RANSACWithInd<double, Eigen::Matrix<double, 6, 1>>(_preInlineRatio, _minNum2Solve, _maxIterNum, _dstSampleRatioTh, _minRatio), m_errTh(_errTh), m_datas(_datas), m_cams(_cams)
+		:SLAM_LYJ::SLAM_LYJ_MATH::RANSACWithInd<double, MDL>(_preInlineRatio, _minNum2Solve, _maxIterNum, _dstSampleRatioTh, _minRatio), m_errTh(_errTh), m_datas(_datas), m_cams(_cams)
 	{
 		m_funcCalErrs = std::bind(&RANSACLine3DWithLine2D::calErr, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 		m_funcCalModule = std::bind(&RANSACLine3DWithLine2D::calMdl, this, std::placeholders::_1, std::placeholders::_2);
-		m_Tcws.resize(_datas.size());
+		m_Twcs.resize(_datas.size());
 		m_KKs.resize(_datas.size());
 		for (size_t i = 0; i < _datas.size(); ++i)
 		{
-			m_Tcws[i] = _datas[i].first.inversed();
+			m_Twcs[i] = _datas[i].first.inversed();
 			m_KKs[i] = Line3d::convertK2KK(_cams[i].getK());
 		}
 	}
@@ -250,13 +251,49 @@ protected:
 	bool calMdl(const std::vector<int>& _samples, MDL& _mdl);
 
 protected:
-	float m_errTh = 2;
-	std::vector<std::pair<Pose3D, Eigen::Vector4d>> m_datas;//Twc, l2d
-	std::vector<Pose3D> m_Tcws;
+	T m_errTh = 2;
+	std::vector<std::pair<Pose3D, Eigen::Vector4d>> m_datas;//Tcw, l2d
+	std::vector<Pose3D> m_Twcs;
 	std::vector<Eigen::Matrix3d> m_KKs;
 	std::vector<PinholeCamera> m_cams;
 };
 
+
+class RANSACPoint3DWithPoint2D : public RANSACWithInd<double, Eigen::Vector3d>
+{
+public:
+	using T = double;
+	using MDL = Eigen::Matrix<double, 3, 1>;
+public:
+	//Tcw
+	RANSACPoint3DWithPoint2D(const std::vector<std::pair<Pose3D, Eigen::Vector2d>>& _datas,
+		const std::vector<PinholeCamera>& _cams,
+		T _errTh,
+		const double _preInlineRatio, const int _minNum2Solve,
+		const int _maxIterNum = INT32_MAX, const double _dstSampleRatioTh = 0.99, const double _minRatio = 0.6)
+		:SLAM_LYJ::SLAM_LYJ_MATH::RANSACWithInd<double, MDL>(_preInlineRatio, _minNum2Solve, _maxIterNum, _dstSampleRatioTh, _minRatio), m_errTh(_errTh), m_datas(_datas), m_cams(_cams)
+	{
+		m_funcCalErrs = std::bind(&RANSACPoint3DWithPoint2D::calErr, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+		m_funcCalModule = std::bind(&RANSACPoint3DWithPoint2D::calMdl, this, std::placeholders::_1, std::placeholders::_2);
+	}
+	~RANSACPoint3DWithPoint2D() {};
+
+	static bool triPoint3DWithPoint2D(
+		const Pose3D& _Tcw1, const Eigen::Vector2d& _p2d1, const PinholeCamera& _cam1,
+		const Pose3D& _Tcw2, const Eigen::Vector2d& _p2d2, const PinholeCamera& _cam2,
+		MDL& _p3d
+	);
+
+protected:
+
+	int calErr(const MDL& _mdl, const std::vector<int>& _datas, std::vector<T>& _errs, std::vector<bool>& _bInls);
+	bool calMdl(const std::vector<int>& _samples, MDL& _mdl);
+
+protected:
+	T m_errTh = 1;
+	std::vector<std::pair<Pose3D, Eigen::Vector2d>> m_datas;//Tcw, p2d
+	std::vector<PinholeCamera> m_cams;
+};
 
 NSP_SLAM_LYJ_MATH_END
 
