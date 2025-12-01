@@ -104,6 +104,27 @@ struct Plane3
 		TemVec3 pInter2 = pointInPlane(_l.ep);
 		return Line3<TYPE>(pInter1, pInter2);
 	}
+	bool getX(TYPE& _X, const TYPE _Y, const TYPE _Z)
+	{
+		if (params[0]<1e-3 && params[0]>(-1e-3))
+			return false;
+		_X = -1 * (params[1] * _Y + params[2] * _Z + params[3]) / params[0];
+		return true;
+	}
+	bool getY(const TYPE _X, TYPE& _Y, const TYPE _Z)
+	{
+		if (params[1]<1e-3 && params[1]>(-1e-3))
+			return false;
+		_Y = -1 * (params[0] * _X + params[2] * _Z + params[3]) / params[1];
+		return true;
+	}
+	bool getZ(const TYPE _X, const TYPE _Y, TYPE& _Z)
+	{
+		if (params[2]<1e-3 && params[2]>(-1e-3))
+			return false;
+		_Z = -1 * (params[0] * _X + params[1] * _Y + params[3]) / params[2];
+		return true;
+	}
 
 	//平面与平面夹角
 	static Line3<TYPE> anglePlane2Plane(const Plane3<TYPE>& _plane1, const Plane3<TYPE>& _plane2) {

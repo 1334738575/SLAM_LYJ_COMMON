@@ -104,6 +104,20 @@ struct Line2 {
         TYPE d = distP2L(_p);
         return _p - d * params.block(0,0,2,1);
     }
+    bool getx(TYPE& _x, const TYPE _y)//ax+by+c=0
+    {
+        if (params[0]<1e-3 && params[0]>(-1e-3))
+            return false;
+        _x = -1 * (params[1] * _y + params[2]) / params[0];
+        return true;
+    }
+    bool gety(const TYPE _x, TYPE& _y)//ax+by+c=0
+    {
+        if (params[1]<1e-3 && params[1]>(-1e-3))
+            return false;
+        _y = -1 * (params[0] * _x + params[2]) / params[1];
+        return true;
+    }
 
     //Ö±Ïß¼Ð½Ç,[0, pi/2]
     static TYPE angleL2L(const Line2<TYPE>& _l1, const Line2<TYPE>& _l2) {

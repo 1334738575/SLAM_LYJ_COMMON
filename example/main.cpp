@@ -887,6 +887,26 @@ void testTriLine3D()
     return;
 }
 
+void testLine()
+{
+    Eigen::Vector2d ctr(1000.36, 1256.99);
+    Eigen::Vector2d nrl(6, 9);
+    nrl.normalize();
+    SLAM_LYJ::Line2d line1(ctr, nrl);
+    double x = 1209;
+    //double y = (-1 * line1.params[0] * x - line1.params[2]) / line1.params[1];
+    double y;
+    if(!line1.gety(x, y))
+        return;
+    Eigen::Vector2d p1(x, y + 1);
+    Eigen::Vector2d p2(x, y - 1);
+    SLAM_LYJ::Line2d line2(p1, p2);
+    Eigen::Vector2d pInt;
+    SLAM_LYJ::Line2d::interestL2L(line1, line2, pInt);
+    std::cout << p1 << std::endl << std::endl;
+    std::cout << p2 << std::endl << std::endl;
+    std::cout << pInt << std::endl << std::endl;
+}
 
 int main(int argc, char *argv[])
 {
@@ -901,6 +921,7 @@ int main(int argc, char *argv[])
     // testOBJ();
     //testJson();
     //genData();
-    testTriLine3D();
+    //testTriLine3D();
+    testLine();
     return 0;
 }
