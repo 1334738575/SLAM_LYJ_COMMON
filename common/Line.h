@@ -30,7 +30,7 @@ struct Line2 {
     }
     Line2(const TemVec2& _v1, const TemVec2& _v2, const bool _useDir=false) {
         if(_useDir)
-            update(TemVec4(_v1(0), _v1(0), _v1(0)+_v2(0), _v1(1)+_v2(1)));
+            update(TemVec4(_v1(0), _v1(1), _v1(0)+_v2(0), _v1(1)+_v2(1)));
         else
             update(TemVec4(_v1(0), _v1(1), _v2(0), _v2(1)));
     }
