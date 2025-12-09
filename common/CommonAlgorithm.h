@@ -34,13 +34,13 @@ static Eigen::Matrix<T, 3, 3> Rodrigues2RotMatrix(const Eigen::Matrix<T, 3, 1> &
 	double csd = static_cast<double>(cs);
 	if (std::abs(csd - 1) <= 1e-3)
 		return Eigen::Matrix<T, 3, 3>::Identity();
-	else if (std::abs(csd + 1) <= 1e-3)
-	{
-		Eigen::Matrix<T, 3, 3> R = Eigen::Matrix<T, 3, 3>::Identity();
-		R(0, 0) = -1;
-		R(1, 1) = -1;
-		return R;
-	}
+	// else if (std::abs(csd + 1) <= 1e-3)
+	// {
+	// 	Eigen::Matrix<T, 3, 3> R = Eigen::Matrix<T, 3, 3>::Identity();
+	// 	R(0, 0) = -1;
+	// 	R(1, 1) = -1;
+	// 	return R;
+	// }
 	T sn = axis.norm();
 	axis.normalize();
 	Eigen::Matrix<T, 3, 3> R = Eigen::Matrix<T, 3, 3>::Identity();
