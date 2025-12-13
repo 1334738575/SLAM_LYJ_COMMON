@@ -118,7 +118,10 @@ inline void BaseTriMesh::enableFNormals()
 inline void BaseTriMesh::disableFNormals()
 {
 	m_enableFNr = false;
-	m_fNormals.swap(std::vector<Eigen::Vector3f>());
+	// m_fNormals.swap(std::vector<Eigen::Vector3f>());
+	// std::swap(m_fNormals, std::vector<Eigen::Vector3f>());
+	m_fNormals.clear();
+	m_fNormals.shrink_to_fit();
 }
 
 inline bool BaseTriMesh::isEnableFNormals() const
@@ -136,7 +139,10 @@ inline void BaseTriMesh::enableFCenters()
 inline void BaseTriMesh::disableFCenters()
 {
 	m_hasFCtr = false;
-	m_centers.swap(std::vector<Eigen::Vector3f>());
+	// m_centers.swap(std::vector<Eigen::Vector3f>());
+	// std::swap(m_centers, std::vector<Eigen::Vector3f>());
+	m_centers.clear();
+	m_centers.shrink_to_fit();
 }
 
 inline bool BaseTriMesh::hasFCenters() const

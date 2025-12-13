@@ -5,6 +5,15 @@
 
 NSP_SLAM_LYJ_MATH_BEGIN
 
+// 向量反对称化
+template <typename T>
+static Eigen::Matrix<T, 3, 3> skewSymmetric(const Eigen::Matrix<T, 3, 1> &v)
+{
+	Eigen::Matrix<T, 3, 3> S;
+	S << 0, -v(2), v(1), v(2), 0, -v(0), -v(1), v(0), 0;
+	return S;
+}
+
 bool SLAM_LYJ_API computeLineByPCA(const std::vector<Eigen::Vector3d>& _pts, Eigen::Vector3d& _p0, Eigen::Vector3d& _dir);
 
 bool SLAM_LYJ_API computePlaneByPCA(const std::vector<Eigen::Vector3d>& _pts, Eigen::Vector3d& _n, Eigen::Vector3d& _p0);
@@ -368,15 +377,6 @@ static T detAgnle(const T _angle1, const T _angle2)
 }
 
 // 欧拉角转旋转矩阵
-
-// 向量反对称化
-template <typename T>
-static Eigen::Matrix<T, 3, 3> skewSymmetric(const Eigen::Matrix<T, 3, 1> &v)
-{
-	Eigen::Matrix<T, 3, 3> S;
-	S << 0, -v(2), v(1), v(2), 0, -v(0), -v(1), v(0), 0;
-	return S;
-}
 
 // calculate fundamental and essential matrix
 static Eigen::Matrix3d calculateEssentialMatrix(

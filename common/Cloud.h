@@ -14,6 +14,7 @@ public:
 	void setVertexs(const std::vector<Eigen::Vector3f> &_vertexs);
 	void setVertex(uint32_t _id, const Eigen::Vector3f &_vertex);
 	void addVertex(const Eigen::Vector3f &_vertex);
+	void addVertex(const Eigen::Vector3f &&_vertex);
 	std::vector<Eigen::Vector3f> &getVertexs();
 	const std::vector<Eigen::Vector3f> &getVertexs() const;
 	const Eigen::Vector3f &getVertex(uint32_t _id) const;

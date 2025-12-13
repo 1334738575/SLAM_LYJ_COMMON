@@ -15,6 +15,12 @@ void Cloud::addVertex(const Eigen::Vector3f &_vertex)
 	if (m_enableVNr)
 		m_vNormals.resize(m_vertexs.size());
 }
+void Cloud::addVertex(const Eigen::Vector3f &&_vertex)
+{
+	m_vertexs.push_back(_vertex);
+	if (m_enableVNr)
+		m_vNormals.resize(m_vertexs.size());
+}
 
 void Cloud::enableVNormals()
 {
@@ -25,7 +31,10 @@ void Cloud::enableVNormals()
 void Cloud::disableVNormals()
 {
 	m_enableVNr = false;
-	m_vNormals.swap(std::vector<Eigen::Vector3f>());
+	// m_vNormals.swap(std::vector<Eigen::Vector3f>());
+	// std::swap(m_vNormals, std::vector<Eigen::Vector3f>());
+	m_vNormals.clear();
+	m_vNormals.shrink_to_fit();
 }
 
 bool Cloud::setVNormals(const std::vector<Eigen::Vector3f> &_vNormals)
@@ -53,7 +62,10 @@ void Cloud::enableVColors()
 void Cloud::disableVColors()
 {
 	m_enableVClr = false;
-	m_vColors.swap(std::vector<Eigen::Vector3f>());
+	// m_vColors.swap(std::vector<Eigen::Vector3f>());
+	// std::swap(m_vColors, std::vector<Eigen::Vector3f>());
+	m_vColors.clear();
+	m_vColors.shrink_to_fit();
 }
 
 bool Cloud::isEnableVColors() const
