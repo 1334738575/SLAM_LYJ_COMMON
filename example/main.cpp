@@ -25,6 +25,7 @@
 
 #include <IO/MeshIO.h>
 #include <IO/SimpleIO.h>
+#include <IO/BaseIO.h>
 
 #include <nlohmann/json.hpp>
 
@@ -908,10 +909,212 @@ void testLine()
     std::cout << pInt << std::endl << std::endl;
 }
 
+
+
+
+
+template<typename T, typename... Args>
+void testTemplateArgs(const std::string& _file, Args&&... rest)
+{
+    using namespace std;
+    va_list arg_ptr;
+    int sum = 0;
+    int nArgValue;
+
+}
+void testArgs(const int* _file, ...)
+{
+    using namespace std;
+    va_list arg_ptr;
+    int sum = 0;
+    const int* nArgValue;
+    va_start(arg_ptr, _file);
+    for (nArgValue = va_arg(arg_ptr, const int*); nArgValue != 0;)
+    {
+        sum += (*nArgValue);
+        nArgValue = va_arg(arg_ptr, const int*);
+    }
+    va_end(arg_ptr);
+    std::cout << sum << std::endl;
+}
+class MyStruct : public SLAM_LYJ::BaseLYJ
+{
+public:
+    int id = -1;
+    std::string name = "null";
+
+    MyStruct(){}
+    MyStruct(int _id, std::string _name) :id(_id), name(_name) {}
+
+    // 通过 BaseLYJ 继承
+    void write_binary(std::ofstream& os) override
+    {
+        COMMON_LYJ::writeBinBasic<int>(os, id);
+        COMMON_LYJ::writeBinString<std::string>(os, name);
+    }
+    void read_binary(std::ifstream& os) override
+    {
+        COMMON_LYJ::readBinBasic<int>(os, id);
+        COMMON_LYJ::readBinString<std::string>(os, name);
+    }
+};
+void testMultiArgs()
+{
+    using namespace COMMON_LYJ;
+    // 测试1：非指针类型 → 返回自身类型
+    print_type<target_type_t<int>>("int（非指针）的目标类型");          // int
+    print_type<target_type_t<const std::string>>("const string（非指针）的目标类型"); // const string
+    print_type<target_type_t<double&>>("double&（非指针引用）的目标类型"); // double
+
+    // 测试2：指针类型 → 返回指向类型
+    print_type<target_type_t<int*>>("int* 的目标类型");                // int
+    print_type<target_type_t<const std::string*>>("const string* 的目标类型"); // const string
+    print_type<target_type_t<double*&>>("double*&（指针引用）的目标类型"); // double
+    print_type<target_type_t<int**>>("int**（二级指针）的目标类型");     // int*（二级指针指向一级指针）
+
+    // 测试3：字符串指针（重点验证）
+    print_type<target_type_t<const char*>>("const char* 的目标类型");   // const char
+    print_type<target_type_t<std::string*>>("string* 的目标类型");      // string
+
+    print_type<target_type_t<MyStruct*>>("MyStruct* 的目标类型");      // string
+    print_type<target_type_t<MyStruct>>("MyStruct 的目标类型");      // string
+    print_type<target_type_t<const MyStruct&>>("const MyStruct& 的目标类型");      // string
+    print_type<target_type_t<const std::vector<MyStruct>&>>("const MyStruct& 的目标类型");      // string
+
+
+    // 测试1：纯 std::vector 类型
+    print_vector_info<const std::vector<int>>("T = std::vector<int>");
+    // 输出：是 vector，目标类型 int
+
+    // 测试2：带 const/引用的 vector（清理后仍匹配）
+    print_vector_info<const std::vector<std::string>&>("T = const std::vector<string>&");
+    // 输出：是 vector，目标类型 string
+
+    // 测试3：非 vector 类型（int）
+    print_vector_info<int>("T = int");
+    // 输出：否 vector，目标类型 int
+
+    // 测试4：非 vector 类型（指针）
+    print_vector_info<int*>("T = int*");
+    // 输出：否 vector，目标类型 int*
+
+    // 测试5：嵌套 vector（仅识别外层是 vector，元素类型为内层 vector）
+    print_vector_info<std::vector<std::vector<double>>>("T = std::vector<vector<double>>");
+    // 输出：是 vector，目标类型 std::vector<double>
+    return;
+
+    //int x0 = 0;
+    //int x1 = 1;
+    //int x2 = 2;
+    //int x3 = 3;
+    //testArgs(&x0, &x1, &x2, &x3, nullptr);
+
+    int it;
+    float flt;
+    double dbl;
+    char* chPtr;
+    std::string strg;
+    //strg.c_str
+    std::cout << typeid(it).name() << std::endl;
+    std::cout << typeid(flt).name() << std::endl;
+    std::cout << typeid(dbl).name() << std::endl;
+    std::cout << typeid(chPtr).name() << std::endl;
+    std::cout << typeid(strg).name() << std::endl;
+    std::string tpName = typeid(strg).name();
+    std::cout << tpName << std::endl;
+    if (tpName.find("std::basic_string<") == 0)
+        std::cout << "find " << std::endl;
+    std::cout << tpName.find("std::basic_string<") << std::endl;
+    uchar uch;
+    short sht;
+    std::cout << typeid(uch).name() << std::endl;
+    std::cout << typeid(sht).name() << std::endl;
+
+
+    MyStruct x{ 1, "x" };
+    MyStruct y{ 3, "y" };
+    std::string nameX = typeid(x).name();
+
+    std::vector<MyStruct> strs;
+    std::cout << typeid(std::vector<MyStruct>::value_type).name() << std::endl;
+    std::cout << typeid(strs).name() << std::endl;
+    MyStruct* strPtr;
+    std::cout << typeid(strPtr).name() << std::endl;
+    std::cout << std::is_pointer_v<decltype(strs)> << std::endl;
+    //std::cout << typeid(std::pointer_target_type<decltype(strs)>) << std::endl;
+    std::cout << std::is_pointer_v<decltype(strPtr)> << std::endl;
+    std::vector<MyStruct*> strPtrs;
+    std::cout << typeid(strPtrs).name() << std::endl;
+    std::cout << typeid(decltype(strPtrs)).name() << std::endl;
+    using T1 = std::remove_reference_t<decltype(*strPtr)>;
+    std::cout << typeid(T1).name() << std::endl;
+
+    std::cout << typeid(x).raw_name() << std::endl;
+    std::cout << nameX << std::endl;
+    decltype(x) z{ 1, "z" };
+    std::cout << typeid(z).name() << std::endl;
+    //auto nX = #x;
+    std::cout << varName(x) << std::endl;
+    MyStruct xy{ 10, "xy" };
+    std::cout << ADJOINT_NAME(x, y).name << std::endl;
+}
+void testWriteBinFile()
+{
+    std::string sv = "12341546";
+    std::string fileNameStr = "D:/tmp/testStr.bin";
+    COMMON_LYJ::writeBinFile<const std::string>(fileNameStr, sv);
+    std::string fileNameStrPtr = "D:/tmp/testStrPtr.bin";
+    COMMON_LYJ::writeBinFile<const std::string*>(fileNameStrPtr, &sv);
+    std::vector<int> va{ 1,2,3,4 };
+    std::string fileNameIntVec = "D:/tmp/testIntVec.bin";
+    COMMON_LYJ::writeBinFile<const std::vector<int>>(fileNameIntVec, va);
+    std::string fileNameIntVecPtr = "D:/tmp/testIntVecPtr.bin";
+    COMMON_LYJ::writeBinFile<const std::vector<int>*>(fileNameIntVecPtr, &va);
+    int x0 = 0;
+    int x1 = 1;
+    int x2 = 2;
+    std::vector<int*> vb{&x0, &x1, &x2};
+    std::string fileNameIntPtrVec = "D:/tmp/testIntPtrVec.bin";
+    COMMON_LYJ::writeBinFile<const std::vector<int*>>(fileNameIntPtrVec, vb);
+    std::string fileNameIntPtrVecPtr = "D:/tmp/testIntPtrVecPtr.bin";
+    COMMON_LYJ::writeBinFile<const std::vector<int*>*>(fileNameIntPtrVecPtr, &vb);
+    MyStruct myStrt{ 100, "lyj" };
+    std::string fileNameUser = "D:/tmp/testUser.bin";
+    COMMON_LYJ::writeBinFile<const MyStruct>(fileNameUser, myStrt);
+}
+void testReadBinFile()
+{
+    std::string sv;
+    std::string fileNameStr = "D:/tmp/testStr.bin";
+    COMMON_LYJ::readBinFile<std::string>(fileNameStr, sv);
+    //std::string fileNameStrPtr = "D:/tmp/testStrPtr.bin";
+    //COMMON_LYJ::readBinFile<std::string*>(fileNameStrPtr, &sv);
+    std::vector<int> va;
+    std::string fileNameIntVec = "D:/tmp/testIntVec.bin";
+    COMMON_LYJ::readBinFile<std::vector<int>>(fileNameIntVec, va);
+    //std::string fileNameIntVecPtr = "D:/tmp/testIntVecPtr.bin";
+    //COMMON_LYJ::readBinFile<std::vector<int>*>(fileNameIntVecPtr, &va);
+    int x0;
+    int x1;
+    int x2;
+    std::vector<int*> vb{ &x0, &x1, &x2 };
+    std::string fileNameIntPtrVec = "D:/tmp/testIntPtrVec.bin";
+    COMMON_LYJ::readBinFile<std::vector<int*>>(fileNameIntPtrVec, vb);
+    //std::string fileNameIntPtrVecPtr = "D:/tmp/testIntPtrVecPtr.bin";
+    //COMMON_LYJ::readBinFile<std::vector<int*>*>(fileNameIntPtrVecPtr, &vb);
+    MyStruct myStrt;
+    std::string fileNameUser = "D:/tmp/testUser.bin";
+    COMMON_LYJ::readBinFile<MyStruct>(fileNameUser, myStrt);
+    return;
+}
+
 int main(int argc, char *argv[])
 {
     std::cout << "Hello COMMON_LYJ" << std::endl;
 
+    testWriteBinFile();
+    testReadBinFile();
+    //testMultiArgs();
     // adjustPose();
     // testPLY();
     //main2();
@@ -922,6 +1125,6 @@ int main(int argc, char *argv[])
     //testJson();
     //genData();
     //testTriLine3D();
-    testLine();
+    //testLine();
     return 0;
 }

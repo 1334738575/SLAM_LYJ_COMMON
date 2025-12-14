@@ -3,8 +3,8 @@
 
 #include <fstream>
 #include <iostream>
-#include <common/BaseTriMesh.h>
-#include <IO/MeshIO.h>
+#include "common/BaseTriMesh.h"
+#include "MeshIO.h"
 #include "base/Pose.h"
 #include "base/CameraModule.h"
 

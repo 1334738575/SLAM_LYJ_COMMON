@@ -28,6 +28,8 @@ typedef Eigen::Matrix<float, 3, 4> Matrix3x4f;
 #define PI 3.1415926
 #define RAD2DEG 57.32484076
 #define DEG2RAD 0.01744444
+#define varName(a) #a
+#define ADJOINT_NAME(a, b) a##b 
 
 // //opencv
 // #include <opencv2/opencv.hpp>
