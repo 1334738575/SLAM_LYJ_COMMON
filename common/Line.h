@@ -229,7 +229,7 @@ struct Line2 {
         }
     }
 
-    void write_binary(std::ofstream& os) {
+    void write_binary(std::ofstream& os)const {
         os.write(reinterpret_cast<const char*>(params), sizeof(TYPE) * 3);
         os.write(reinterpret_cast<const char*>(ps), sizeof(TYPE) * 4);
         os.write(reinterpret_cast<const char*>(length), sizeof(TYPE) * 1);
@@ -580,7 +580,7 @@ struct Line3 {
 
 
 public:
-    void write_binary(std::ofstream& os) {
+    void write_binary(std::ofstream& os)const {
         os.write(reinterpret_cast<const char*>(dir.data()), sizeof(TYPE) * 3);
         os.write(reinterpret_cast<const char*>(sp.data()), sizeof(TYPE) * 3);
         os.write(reinterpret_cast<const char*>(ep.data()), sizeof(TYPE) * 3);

@@ -103,7 +103,7 @@ public:
     BaseLYJ(/* args */) {};
     ~BaseLYJ() {};
 
-    virtual void write_binary(std::ofstream &os) = 0;
+    virtual void write_binary(std::ofstream &os) const = 0;
     virtual void read_binary(std::ifstream &os) = 0;
 };
 

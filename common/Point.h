@@ -151,7 +151,7 @@ struct Point : public BaseLYJ
 		std::cout << ")";
 		return os;
 	}
-	void write_binary(std::ofstream& os) {
+	void write_binary(std::ofstream& os)const {
 		os.write(reinterpret_cast<const char*>(data), sizeof(TYPE) * DIM);
 		os.write(reinterpret_cast<const char*>(&nm), sizeof(double));
 	}

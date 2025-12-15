@@ -911,16 +911,27 @@ void testLine()
 
 
 
-
-
-template<typename T, typename... Args>
-void testTemplateArgs(const std::string& _file, Args&&... rest)
+template<typename... Ts>
+void TemplateRecursion(const Ts&... args)
 {
-    using namespace std;
-    va_list arg_ptr;
-    int sum = 0;
-    int nArgValue;
-
+    std::cout << "base" << std::endl;
+}
+template<typename T>
+void TemplateRecursion(const T& _first)
+{
+    std::cout << typeid(_first).name() << std::endl;
+}
+template<typename T, typename... Args>
+void TemplateRecursion(const T& _first, const Args&... rest)
+{
+    std::cout << typeid(_first).name() << std::endl;
+    TemplateRecursion<Args...>(rest...);
+}
+template<typename... Args>
+void testTemplateArgs(const std::string& _file, const Args&... args)
+{
+    std::cout << "filename: " << _file << std::endl;
+    TemplateRecursion<Args...>(args...);
 }
 void testArgs(const int* _file, ...)
 {
@@ -937,7 +948,8 @@ void testArgs(const int* _file, ...)
     va_end(arg_ptr);
     std::cout << sum << std::endl;
 }
-class MyStruct : public SLAM_LYJ::BaseLYJ
+class MyStruct
+//class MyStruct : public SLAM_LYJ::BaseLYJ
 {
 public:
     int id = -1;
@@ -947,12 +959,12 @@ public:
     MyStruct(int _id, std::string _name) :id(_id), name(_name) {}
 
     // 通过 BaseLYJ 继承
-    void write_binary(std::ofstream& os) override
+    void write_binary(std::ofstream& os) const
     {
         COMMON_LYJ::writeBinBasic<int>(os, id);
         COMMON_LYJ::writeBinString<std::string>(os, name);
     }
-    void read_binary(std::ifstream& os) override
+    void read_binary(std::ifstream& os)
     {
         COMMON_LYJ::readBinBasic<int>(os, id);
         COMMON_LYJ::readBinString<std::string>(os, name);
@@ -960,6 +972,14 @@ public:
 };
 void testMultiArgs()
 {
+    std::string strTR = "D:/tmp/testTR.bin";
+    int iTR = 0;
+    double dTR = 1.09808;
+    std::vector<std::string> strsTR{ "1111", "2222" };
+    MyStruct myStrTR{ 111, "ljk" };
+    testTemplateArgs<int, double, std::vector<std::string>, MyStruct>(strTR, iTR, dTR, strsTR, myStrTR);
+    return;
+
     using namespace COMMON_LYJ;
     // 测试1：非指针类型 → 返回自身类型
     print_type<target_type_t<int>>("int（非指针）的目标类型");          // int
@@ -1081,30 +1101,43 @@ void testWriteBinFile()
     MyStruct myStrt{ 100, "lyj" };
     std::string fileNameUser = "D:/tmp/testUser.bin";
     COMMON_LYJ::writeBinFile<const MyStruct>(fileNameUser, myStrt);
+    std::string fileNameMulti = "D:/tmp/testMulti.bin";
+    COMMON_LYJ::writeBinFile< const std::string, const std::vector<int>, const MyStruct>(fileNameMulti, sv, va, myStrt);
 }
 void testReadBinFile()
 {
     std::string sv;
     std::string fileNameStr = "D:/tmp/testStr.bin";
     COMMON_LYJ::readBinFile<std::string>(fileNameStr, sv);
-    //std::string fileNameStrPtr = "D:/tmp/testStrPtr.bin";
-    //COMMON_LYJ::readBinFile<std::string*>(fileNameStrPtr, &sv);
+    std::string fileNameStrPtr = "D:/tmp/testStrPtr.bin";
+    std::string svTmp;
+    std::string* svPtr = &svTmp;
+    COMMON_LYJ::readBinFile<std::string*>(fileNameStrPtr, svPtr);
     std::vector<int> va;
     std::string fileNameIntVec = "D:/tmp/testIntVec.bin";
     COMMON_LYJ::readBinFile<std::vector<int>>(fileNameIntVec, va);
-    //std::string fileNameIntVecPtr = "D:/tmp/testIntVecPtr.bin";
-    //COMMON_LYJ::readBinFile<std::vector<int>*>(fileNameIntVecPtr, &va);
+    std::string fileNameIntVecPtr = "D:/tmp/testIntVecPtr.bin";
+    std::vector<int> vaTmp;
+    std::vector<int>* vaPtr = &vaTmp;
+    COMMON_LYJ::readBinFile<std::vector<int>*>(fileNameIntVecPtr, vaPtr);
     int x0;
     int x1;
     int x2;
     std::vector<int*> vb{ &x0, &x1, &x2 };
     std::string fileNameIntPtrVec = "D:/tmp/testIntPtrVec.bin";
     COMMON_LYJ::readBinFile<std::vector<int*>>(fileNameIntPtrVec, vb);
-    //std::string fileNameIntPtrVecPtr = "D:/tmp/testIntPtrVecPtr.bin";
-    //COMMON_LYJ::readBinFile<std::vector<int*>*>(fileNameIntPtrVecPtr, &vb);
+    std::string fileNameIntPtrVecPtr = "D:/tmp/testIntPtrVecPtr.bin";
+    //std::vector<int*> vbTmp;
+    //std::vector<int*>* vbPtr;
+    //COMMON_LYJ::readBinFile<std::vector<int*>*>(fileNameIntPtrVecPtr, vbPtr);//TODO 指针中包含指针读取会出错
     MyStruct myStrt;
     std::string fileNameUser = "D:/tmp/testUser.bin";
     COMMON_LYJ::readBinFile<MyStruct>(fileNameUser, myStrt);
+    std::string fileNameMulti = "D:/tmp/testMulti.bin";
+    std::string sv2;
+    std::vector<int> va2;
+    MyStruct myStrt2;
+    COMMON_LYJ::readBinFile<std::string, std::vector<int>, MyStruct>(fileNameMulti, sv2, va2, myStrt2);
     return;
 }
 

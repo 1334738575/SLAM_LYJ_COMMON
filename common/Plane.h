@@ -153,7 +153,7 @@ struct Plane3
 	}
 
 
-	void write_binary(std::ofstream& os) {
+	void write_binary(std::ofstream& os)const {
 		os.write(reinterpret_cast<const char*>(params.data()), sizeof(TYPE) * 4);
 		os.write(reinterpret_cast<const char*>(canter.data()), sizeof(TYPE) * 3);
 	}

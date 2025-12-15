@@ -1,6 +1,12 @@
 #ifndef SLAM_LYJ_COMMON_BASEIO_H
 #define SLAM_LYJ_COMMON_BASEIO_H
-
+/******************************************************/
+/*
+* 读写二进制文件
+* 指针中包含指针读取会出错，在自定义类中需要注意指针的读取和释放
+* 自定义类需要实现void write_binary(std::ofstream& os) const 和 void read_binary(std::ifstream& os)
+*/
+/******************************************************/
 
 #include <base/Base.h>
 #include <fstream>
@@ -98,10 +104,17 @@ namespace COMMON_LYJ
 
 	// 第一步：定义检测模板（核心）
 	template <typename T, typename = void>
-	struct has_func : std::false_type {}; // 默认：不存在
+	struct has_func : std::false_type {
+		static constexpr bool is_user = false;  // 标记：非 pointer
+	}; // 默认：不存在
 	// 特化版本：如果 T 包含 void func()，则匹配此版本（推导成功）
 	template <typename T>
-	struct has_func<T, std::void_t<decltype(std::declval<T>().write_binary(std::declval<std::ofstream&>()))>> : std::true_type {};
+	struct has_func<T, std::void_t<decltype(std::declval<T>().write_binary(std::declval<std::ofstream&>()))>> : std::true_type {
+		static constexpr bool is_user = true;  // 标记：非 pointer
+	};
+	// 步骤3：简化别名（对外接口）
+	template <typename T>
+	constexpr bool is_user_v = has_func<T>::is_user; // 是否自定义
 
 
 
@@ -129,8 +142,9 @@ namespace COMMON_LYJ
 	template<typename T>
 	void writeBinUser(std::ofstream& file, const T& value)
 	{
-		SLAM_LYJ::BaseLYJ* ptr = (SLAM_LYJ::BaseLYJ*)(&value);
-		ptr->write_binary(file);
+		//SLAM_LYJ::BaseLYJ* ptr = (SLAM_LYJ::BaseLYJ*)(&value);
+		//ptr->write_binary(file);
+		value.write_binary(file);
 	}
 	template <typename T>
 	void writeBinBasicVectorEvery(std::ofstream& file, const std::vector<T>& vec) {
@@ -139,7 +153,7 @@ namespace COMMON_LYJ
 		file.write(reinterpret_cast<const char*>(vec.data()), sz * sizeof(T));
 	}
 
-	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true>
+	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
 	void writeBin(std::ofstream& file, const T& value)
 	{
 		using RT = RemoveCVRef<T>;             // 非 vector 则返回自身类型
@@ -181,14 +195,14 @@ namespace COMMON_LYJ
 		//defined by user
 		else if(has_func<RT>::value == 1)
 		{
-			writeBinUser<RT>(file, value);
+			writeBin<RT>(file, value);
 		}
 		else
 		{
 			std::cout << "write binary type error!" << std::endl;
 		}
 	}
-	template<typename T, std::enable_if_t<is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true>
+	template<typename T, std::enable_if_t<is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
 	void writeBin(std::ofstream& file, const T& value)
 	{
 		using RT = target_type_t<T>;
@@ -231,14 +245,14 @@ namespace COMMON_LYJ
 		//defined by user
 		else if (has_func<T2>::value == 1)
 		{
-			writeBinUser<T2>(file, *value);
+			writeBin<T2>(file, *value);
 		}
 		else
 		{
 			std::cout << "write binary type error!" << std::endl;
 		}
 	}
-	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<is_vector_v<T>, bool> = true>
+	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
 	void writeBin(std::ofstream& file, const T& value)
 	{
 		using RT = vector_element_t<T>;
@@ -285,25 +299,49 @@ namespace COMMON_LYJ
 		else if (has_func<T2>::value == 1)
 		{
 			for (int i = 0; i < sz; ++i)
-				writeBinUser<T2>(file, value[i]);
+				writeBin<T2>(file, value[i]);
 		}
 		else
 		{
 			std::cout << "write binary type error!" << std::endl;
 		}
 	}
-
-
-	template<typename T>
-	bool writeBinFile(const std::string& _fileName, const T& _data)
+	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<is_user_v<T>, bool> = true>
+	void writeBin(std::ofstream& file, const T& value)
 	{
+		writeBinUser<T>(file, value);
+	}
+
+
+	template<typename... Ts>
+	void writeBinDatas(std::ofstream& file, const Ts&... args)
+	{
+		//std::cout << "base" << std::endl;
+	}
+	template<typename T>
+	void writeBinDatas(std::ofstream& file, const T& _first)
+	{
+		//std::cout << typeid(_first).name() << std::endl;
+		writeBin<T>(file, _first);
+	}
+	template<typename T, typename... Args>
+	void writeBinDatas(std::ofstream& file, const T& _first, const Args&... rest)
+	{
+		//std::cout << typeid(_first).name() << std::endl;
+		writeBin<T>(file, _first);
+		writeBinDatas<Args...>(file, rest...);
+	}
+	template<typename... Args>
+	bool writeBinFile(const std::string& _fileName, const Args&... args)
+	{
+		std::cout << "write filename: " << _fileName << std::endl;
 		std::ofstream f(_fileName);
 		if (!f.is_open())
 		{
 			std::cout << "open file failed!" << std::endl;
 			return false;
 		}
-		writeBin<T>(f, _data);
+		writeBinDatas<Args...>(f, args...);
 		f.close();
 		return true;
 	}
@@ -333,8 +371,9 @@ namespace COMMON_LYJ
 	template<typename T>
 	void readBinUser(std::ifstream& file, T& value)
 	{
-		SLAM_LYJ::BaseLYJ* ptr = (SLAM_LYJ::BaseLYJ*)(&value);
-		ptr->read_binary(file);
+		//SLAM_LYJ::BaseLYJ* ptr = (SLAM_LYJ::BaseLYJ*)(&value);
+		//ptr->read_binary(file);
+		value.read_binary(file);
 	}
 	template <typename T>
 	void readBinBasicVectorEvery(std::ifstream& file, std::vector<T>& vec) {
@@ -345,7 +384,7 @@ namespace COMMON_LYJ
 	}
 
 
-	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true>
+	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
 	void readBin(std::ifstream& file, T& value)
 	{
 		using RT = RemoveCVRef<T>;             // 非 vector 则返回自身类型
@@ -387,14 +426,14 @@ namespace COMMON_LYJ
 		//defined by user
 		else if (has_func<RT>::value == 1)
 		{
-			readBinUser<RT>(file, value);
+			readBin<RT>(file, value);
 		}
 		else
 		{
 			std::cout << "write binary type error!" << std::endl;
 		}
 	}
-	template<typename T, std::enable_if_t<is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true>
+	template<typename T, std::enable_if_t<is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
 	void readBin(std::ifstream& file, T& value)
 	{
 		using RT = target_type_t<T>;
@@ -437,14 +476,14 @@ namespace COMMON_LYJ
 		//defined by user
 		else if (has_func<T2>::value == 1)
 		{
-			readBinUser<T2>(file, *value);
+			readBin<T2>(file, *value);
 		}
 		else
 		{
 			std::cout << "write binary type error!" << std::endl;
 		}
 	}
-	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<is_vector_v<T>, bool> = true>
+	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
 	void readBin(std::ifstream& file, T& value)
 	{
 		using RT = vector_element_t<T>;
@@ -491,25 +530,55 @@ namespace COMMON_LYJ
 		else if (has_func<T2>::value == 1)
 		{
 			for (int i = 0; i < sz; ++i)
-				readBinUser<T2>(file, value[i]);
+				readBin<T2>(file, value[i]);
 		}
 		else
 		{
 			std::cout << "write binary type error!" << std::endl;
 		}
 	}
-
-
-	template<typename T>
-	bool readBinFile(const std::string& _fileName, T& _data)
+	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<is_user_v<T>, bool> = true>
+	void readBin(std::ifstream& file, T& value)
 	{
+		readBinUser<T>(file, value);
+	}
+
+	template<typename... Ts>
+	void readBinDatas(std::ifstream& file, Ts&... args)
+	{
+		//std::cout << "base" << std::endl;
+	}
+	template<typename T>
+	void readBinDatas(std::ifstream& file, T& _first)
+	{
+		//std::cout << typeid(_first).name() << std::endl;
+		readBin<T>(file, _first);
+	}
+	template<typename T, typename... Args>
+	void readBinDatas(std::ifstream& file, T& _first, Args&... rest)
+	{
+		//std::cout << typeid(_first).name() << std::endl;
+		readBin<T>(file, _first);
+		readBinDatas<Args...>(file, rest...);
+	}
+	/// <summary>
+	/// 指针中包含指针读取会出错，在自定义类中需要注意指针的读取和释放
+	/// </summary>
+	/// <typeparam name="...Args"></typeparam>
+	/// <param name="_fileName"></param>
+	/// <param name="...args"></param>
+	/// <returns></returns>
+	template<typename... Args>
+	bool readBinFile(const std::string& _fileName, Args&... args)
+	{
+		std::cout << "read filename: " << _fileName << std::endl;
 		std::ifstream f(_fileName);
 		if (!f.is_open())
 		{
 			std::cout << "open file failed!" << std::endl;
 			return false;
 		}
-		readBin<T>(f, _data);
+		readBinDatas<Args...>(f, args...);
 		f.close();
 		return true;
 	}

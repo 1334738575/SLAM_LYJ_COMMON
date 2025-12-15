@@ -200,7 +200,7 @@ public:
         return params[3];
     }
 
-    void write_binary(std::ofstream &os) override
+    void write_binary(std::ofstream &os) const override
     {
         os.write(reinterpret_cast<const char *>(&type), sizeof(int) * 1);
         os.write(reinterpret_cast<const char *>(&w), sizeof(int) * 1);

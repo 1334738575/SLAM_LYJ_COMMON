@@ -43,7 +43,7 @@ public:
     }
     ~Pose3D() {}
 
-    void write_binary(std::ofstream &os)
+    void write_binary(std::ofstream &os)const
     {
         os.write(reinterpret_cast<const char *>(R.data()), sizeof(double) * 9);
         os.write(reinterpret_cast<const char *>(t.data()), sizeof(double) * 3);
@@ -173,7 +173,7 @@ public:
     }
     ~Pose2D() {};
 
-    void write_binary(std::ofstream &os)
+    void write_binary(std::ofstream &os)const
     {
         os.write(reinterpret_cast<const char *>(&thera), sizeof(double) * 1);
         os.write(reinterpret_cast<const char *>(t.data()), sizeof(double) * 2);
