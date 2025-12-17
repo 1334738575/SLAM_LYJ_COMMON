@@ -1,4 +1,4 @@
 build
 install
 Output
-config/*.h
+config/config.h
