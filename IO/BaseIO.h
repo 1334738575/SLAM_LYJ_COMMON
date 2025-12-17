@@ -122,17 +122,22 @@ namespace COMMON_LYJ
 
 	/*********************************write*****************************************/
 	template<typename T>
-	void writeBinBasic(std::ofstream& file, const T& value)
+	static void writeBinDirect(std::ofstream& file, const T* value, const uint64_t sz)
+	{
+		file.write(reinterpret_cast<const char*>(value), sizeof(T)*sz);
+	}
+	template<typename T>
+	static void writeBinBasic(std::ofstream& file, const T& value)
 	{
 		file.write(reinterpret_cast<const char*>(&value), sizeof(T));
 	}
 	template<typename T>
-	void writeBinString(std::ofstream& file, const T& value)
+	static void writeBinString(std::ofstream& file, const T& value)
 	{
 		//std::cout << "no string" << std::endl;
 	}
 	template<>
-	void writeBinString<std::string>(std::ofstream& file, const std::string& value)
+	static void writeBinString<std::string>(std::ofstream& file, const std::string& value)
 	{
 		//std::cout << "string" << std::endl;
 		size_t sz = value.size();
@@ -140,21 +145,21 @@ namespace COMMON_LYJ
 		file.write(reinterpret_cast<const char*>(value.c_str()), sz * sizeof(char));
 	}
 	template<typename T>
-	void writeBinUser(std::ofstream& file, const T& value)
+	static void writeBinUser(std::ofstream& file, const T& value)
 	{
 		//SLAM_LYJ::BaseLYJ* ptr = (SLAM_LYJ::BaseLYJ*)(&value);
 		//ptr->write_binary(file);
 		value.write_binary(file);
 	}
 	template <typename T>
-	void writeBinBasicVectorEvery(std::ofstream& file, const std::vector<T>& vec) {
+	static void writeBinBasicVectorEvery(std::ofstream& file, const std::vector<T>& vec) {
 		size_t sz = vec.size();
 		writeBinBasic<size_t>(file, sz);
 		file.write(reinterpret_cast<const char*>(vec.data()), sz * sizeof(T));
 	}
 
 	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
-	void writeBin(std::ofstream& file, const T& value)
+	static void writeBin(std::ofstream& file, const T& value)
 	{
 		using RT = RemoveCVRef<T>;             // 非 vector 则返回自身类型
 		std::string tpName = typeid(value).name();
@@ -203,7 +208,7 @@ namespace COMMON_LYJ
 		}
 	}
 	template<typename T, std::enable_if_t<is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
-	void writeBin(std::ofstream& file, const T& value)
+	static void writeBin(std::ofstream& file, const T& value)
 	{
 		using RT = target_type_t<T>;
 		using T2 = RemoveCVRef<RT>;             // 非 vector 则返回自身类型
@@ -253,7 +258,7 @@ namespace COMMON_LYJ
 		}
 	}
 	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
-	void writeBin(std::ofstream& file, const T& value)
+	static void writeBin(std::ofstream& file, const T& value)
 	{
 		using RT = vector_element_t<T>;
 		using T2 = RemoveCVRef<RT>;             // 非 vector 则返回自身类型
@@ -307,32 +312,32 @@ namespace COMMON_LYJ
 		}
 	}
 	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<is_user_v<T>, bool> = true>
-	void writeBin(std::ofstream& file, const T& value)
+	static void writeBin(std::ofstream& file, const T& value)
 	{
 		writeBinUser<T>(file, value);
 	}
 
 
 	template<typename... Ts>
-	void writeBinDatas(std::ofstream& file, const Ts&... args)
+	static void writeBinDatas(std::ofstream& file, const Ts&... args)
 	{
 		//std::cout << "base" << std::endl;
 	}
 	template<typename T>
-	void writeBinDatas(std::ofstream& file, const T& _first)
+	static void writeBinDatas(std::ofstream& file, const T& _first)
 	{
 		//std::cout << typeid(_first).name() << std::endl;
 		writeBin<T>(file, _first);
 	}
 	template<typename T, typename... Args>
-	void writeBinDatas(std::ofstream& file, const T& _first, const Args&... rest)
+	static void writeBinDatas(std::ofstream& file, const T& _first, const Args&... rest)
 	{
 		//std::cout << typeid(_first).name() << std::endl;
 		writeBin<T>(file, _first);
 		writeBinDatas<Args...>(file, rest...);
 	}
 	template<typename... Args>
-	bool writeBinFile(const std::string& _fileName, const Args&... args)
+	static bool writeBinFile(const std::string& _fileName, const Args&... args)
 	{
 		std::cout << "write filename: " << _fileName << std::endl;
 		std::ofstream f(_fileName);
@@ -350,17 +355,22 @@ namespace COMMON_LYJ
 
 	/*********************************read*****************************************/
 	template<typename T>
-	void readBinBasic(std::ifstream& file, T& value)
+	static void readBinDirect(std::ifstream& file, T* value, const uint64_t sz)
+	{
+		file.read(reinterpret_cast<char*>(value), sizeof(T)*sz);
+	}
+	template<typename T>
+	static void readBinBasic(std::ifstream& file, T& value)
 	{
 		file.read(reinterpret_cast<char*>(&value), sizeof(T));
 	}
 	template<typename T>
-	void readBinString(std::ifstream& file, T& value)
+	static void readBinString(std::ifstream& file, T& value)
 	{
 		//std::cout << "no string" << std::endl;
 	}
 	template<>
-	void readBinString<std::string>(std::ifstream& file, std::string& value)
+	static void readBinString<std::string>(std::ifstream& file, std::string& value)
 	{
 		//std::cout << "string" << std::endl;
 		size_t sz;
@@ -369,14 +379,14 @@ namespace COMMON_LYJ
 		file.read(reinterpret_cast<char*>(value.data()), sz * sizeof(char));
 	}
 	template<typename T>
-	void readBinUser(std::ifstream& file, T& value)
+	static void readBinUser(std::ifstream& file, T& value)
 	{
 		//SLAM_LYJ::BaseLYJ* ptr = (SLAM_LYJ::BaseLYJ*)(&value);
 		//ptr->read_binary(file);
 		value.read_binary(file);
 	}
 	template <typename T>
-	void readBinBasicVectorEvery(std::ifstream& file, std::vector<T>& vec) {
+	static void readBinBasicVectorEvery(std::ifstream& file, std::vector<T>& vec) {
 		size_t sz;
 		readBinBasic<size_t>(file, sz);
 		vec.resize(sz);
@@ -385,7 +395,7 @@ namespace COMMON_LYJ
 
 
 	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
-	void readBin(std::ifstream& file, T& value)
+	static void readBin(std::ifstream& file, T& value)
 	{
 		using RT = RemoveCVRef<T>;             // 非 vector 则返回自身类型
 		std::string tpName = typeid(value).name();
@@ -434,7 +444,7 @@ namespace COMMON_LYJ
 		}
 	}
 	template<typename T, std::enable_if_t<is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
-	void readBin(std::ifstream& file, T& value)
+	static void readBin(std::ifstream& file, T& value)
 	{
 		using RT = target_type_t<T>;
 		using T2 = RemoveCVRef<RT>;             // 非 vector 则返回自身类型
@@ -484,7 +494,7 @@ namespace COMMON_LYJ
 		}
 	}
 	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
-	void readBin(std::ifstream& file, T& value)
+	static void readBin(std::ifstream& file, T& value)
 	{
 		using RT = vector_element_t<T>;
 		using T2 = RemoveCVRef<RT>;             // 非 vector 则返回自身类型
@@ -538,24 +548,24 @@ namespace COMMON_LYJ
 		}
 	}
 	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<is_user_v<T>, bool> = true>
-	void readBin(std::ifstream& file, T& value)
+	static void readBin(std::ifstream& file, T& value)
 	{
 		readBinUser<T>(file, value);
 	}
 
 	template<typename... Ts>
-	void readBinDatas(std::ifstream& file, Ts&... args)
+	static void readBinDatas(std::ifstream& file, Ts&... args)
 	{
 		//std::cout << "base" << std::endl;
 	}
 	template<typename T>
-	void readBinDatas(std::ifstream& file, T& _first)
+	static void readBinDatas(std::ifstream& file, T& _first)
 	{
 		//std::cout << typeid(_first).name() << std::endl;
 		readBin<T>(file, _first);
 	}
 	template<typename T, typename... Args>
-	void readBinDatas(std::ifstream& file, T& _first, Args&... rest)
+	static void readBinDatas(std::ifstream& file, T& _first, Args&... rest)
 	{
 		//std::cout << typeid(_first).name() << std::endl;
 		readBin<T>(file, _first);
@@ -569,7 +579,7 @@ namespace COMMON_LYJ
 	/// <param name="...args"></param>
 	/// <returns></returns>
 	template<typename... Args>
-	bool readBinFile(const std::string& _fileName, Args&... args)
+	static bool readBinFile(const std::string& _fileName, Args&... args)
 	{
 		std::cout << "read filename: " << _fileName << std::endl;
 		std::ifstream f(_fileName);
