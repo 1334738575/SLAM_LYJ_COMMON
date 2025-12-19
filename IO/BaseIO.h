@@ -376,7 +376,9 @@ namespace COMMON_LYJ
 		size_t sz;
 		readBinBasic<size_t>(file, sz);
 		value.resize(sz);
-		file.read(reinterpret_cast<char*>(value.data()), sz * sizeof(char));
+		std::vector<char> chs(sz);
+		file.read(reinterpret_cast<char*>(chs.data()), sz * sizeof(char));
+		value.assign(chs.data(), sz);
 	}
 	template<typename T>
 	static void readBinUser(std::ifstream& file, T& value)
