@@ -340,7 +340,7 @@ namespace COMMON_LYJ
 	static bool writeBinFile(const std::string& _fileName, const Args&... args)
 	{
 		std::cout << "write filename: " << _fileName << std::endl;
-		std::ofstream f(_fileName);
+		std::ofstream f(_fileName, std::ios::binary);
 		if (!f.is_open())
 		{
 			std::cout << "open file failed!" << std::endl;
@@ -584,7 +584,7 @@ namespace COMMON_LYJ
 	static bool readBinFile(const std::string& _fileName, Args&... args)
 	{
 		std::cout << "read filename: " << _fileName << std::endl;
-		std::ifstream f(_fileName);
+		std::ifstream f(_fileName, std::ios::binary);
 		if (!f.is_open())
 		{
 			std::cout << "open file failed!" << std::endl;
