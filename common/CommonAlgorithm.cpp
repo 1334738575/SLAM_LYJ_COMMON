@@ -2,6 +2,22 @@
 
 NSP_SLAM_LYJ_MATH_BEGIN
 
+
+
+int64_t SLAM_LYJ_API imagePair2Int64(int _i1, int _i2)
+{
+	if (_i1 <= _i2)
+		return (static_cast<int64_t>(_i1) << 32) | static_cast<int64_t>(_i2);
+	else
+		return (static_cast<int64_t>(_i2) << 32) | static_cast<int64_t>(_i1);
+}
+std::pair<int, int> SLAM_LYJ_API int642TwoImagePair(int64_t _pair)
+{
+	int i1 = static_cast<int>(_pair >> 32);
+	int i2 = static_cast<int>(_pair & 0xFFFFFFFF);
+	return { i1, i2 };
+}
+
 bool SLAM_LYJ_API computeLineByPCA(const std::vector<Eigen::Vector3d>& _pts, Eigen::Vector3d& _p0, Eigen::Vector3d& _dir)
 {
 	if (_pts.size() < 2)

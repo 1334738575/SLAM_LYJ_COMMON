@@ -5,6 +5,10 @@
 
 NSP_SLAM_LYJ_MATH_BEGIN
 
+
+int64_t SLAM_LYJ_API imagePair2Int64(int _i1, int _i2);
+std::pair<int, int> SLAM_LYJ_API int642TwoImagePair(int64_t _pair);
+
 // 向量反对称化
 template <typename T>
 static Eigen::Matrix<T, 3, 3> skewSymmetric(const Eigen::Matrix<T, 3, 1> &v)
