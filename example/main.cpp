@@ -22,6 +22,7 @@
 #include <common/CommonAlgorithm.h>
 #include <common/PossionSolver.h>
 #include <common/FlannSearch.h>
+#include <common/CompressedImage.h>
 
 #include <IO/MeshIO.h>
 #include <IO/SimpleIO.h>
@@ -39,6 +40,8 @@
 #include <Eigen/Eigen>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+
+#include <turbojpeg.h>
 
 void testDefine()
 {
@@ -1141,12 +1144,185 @@ void testReadBinFile()
     return;
 }
 
+/**
+ * 压缩cv::Mat为JPEG字节流（内存级）
+ * @param mat 输入图像（支持灰度图CV_8UC1、彩色图CV_8UC3）
+ * @param quality 压缩质量（1-100，越高画质越好，80为平衡值）
+ * @return JPEG压缩后的字节流
+ */
+std::vector<unsigned char> compressMatToJpeg(const cv::Mat& mat, int quality = 95) {
+    if (mat.empty()) {
+        throw std::runtime_error("输入Mat为空");
+    }
+    if (quality < 1 || quality > 100) {
+        throw std::runtime_error("压缩质量需在1-100之间");
+    }
+
+    tjhandle tjCompressor = tjInitCompress();
+    if (!tjCompressor) {
+        throw std::runtime_error("初始化libjpeg-turbo压缩器失败");
+    }
+
+    unsigned char* jpegBuf = nullptr;
+    unsigned long jpegSize = 0;
+    int width = mat.cols;
+    int height = mat.rows;
+    int pitch = width * mat.channels(); // 每行字节数
+    int pixelFormat;
+    const unsigned char* srcData;
+    int subsamp; // 色度采样模式（灰度图专用）
+
+    // 处理灰度图/彩色图
+    if (mat.channels() == 1) {
+        pixelFormat = TJPF_GRAY;
+        srcData = mat.data;
+        subsamp = TJSAMP_GRAY;
+    }
+    else if (mat.channels() == 3) {
+        pixelFormat = TJPF_RGB;
+        srcData = mat.data;
+        subsamp = TJSAMP_420;
+    }
+    else {
+        tjDestroy(tjCompressor);
+        throw std::runtime_error("仅支持1通道（灰度）/3通道（彩色）Mat");
+    }
+
+    // 核心压缩API
+    int ret = tjCompress2(
+        tjCompressor,
+        srcData,        // 输入像素数据
+        width,          // 宽度
+        pitch,          // 每行字节数（pitch）
+        height,         // 高度
+        pixelFormat,    // 像素格式（灰度/TJPF_GRAY，彩色/TJPF_RGB）
+        &jpegBuf,       // 输出JPEG缓冲区（由turbojpeg分配）
+        &jpegSize,      // 输出JPEG数据长度
+        subsamp,     // 色度采样（420压缩率最高，444画质最好）
+        quality,        // 压缩质量
+        TJFLAG_FASTDCT  // 快速DCT（牺牲少量画质提升速度）
+    );
+
+    if (ret != 0) {
+        tjDestroy(tjCompressor);
+        throw std::runtime_error("JPEG压缩失败：" + std::string(tjGetErrorStr()));
+    }
+
+    // 拷贝JPEG数据到vector并释放turbojpeg缓冲区
+    std::vector<unsigned char> jpegData(jpegBuf, jpegBuf + jpegSize);
+    tjFree(jpegBuf);
+    tjDestroy(tjCompressor);
+
+    return jpegData;
+}
+/**
+ * 解压JPEG字节流为cv::Mat（内存级）
+ * @param jpegData JPEG压缩字节流
+ * @return 解压后的cv::Mat（灰度图CV_8UC1/彩色图CV_8UC3）
+ */
+cv::Mat decompressJpegToMat(const std::vector<unsigned char>& jpegData) {
+    if (jpegData.empty()) {
+        throw std::runtime_error("输入JPEG数据为空");
+    }
+
+    tjhandle tjDecompressor = tjInitDecompress();
+    if (!tjDecompressor) {
+        throw std::runtime_error("初始化libjpeg-turbo解压器失败");
+    }
+
+    // 第一步：获取JPEG头信息（宽高、格式等）
+    int width, height, jpegSubsamp, jpegColorspace;
+    int ret = tjDecompressHeader3(
+        tjDecompressor,
+        jpegData.data(),
+        jpegData.size(),
+        &width,
+        &height,
+        &jpegSubsamp,
+        &jpegColorspace
+    );
+    if (ret != 0) {
+        tjDestroy(tjDecompressor);
+        throw std::runtime_error("解析JPEG头失败：" + std::string(tjGetErrorStr()));
+    }
+
+    // 第二步：解压缩为像素数据（优先解压为RGB/灰度）
+    int pixelFormat = (jpegColorspace == TJCS_GRAY) ? TJPF_GRAY : TJPF_RGB;
+    int channels = (pixelFormat == TJPF_GRAY) ? 1 : 3;
+    int pitch = width * channels;
+    std::vector<unsigned char> pixelData(height * pitch);
+
+    ret = tjDecompress2(
+        tjDecompressor,
+        jpegData.data(),
+        jpegData.size(),
+        pixelData.data(),
+        width,
+        pitch,
+        height,
+        pixelFormat,
+        TJFLAG_FASTDCT // 快速逆DCT TJFLAG_FASTDCT
+    );
+    if (ret != 0) {
+        tjDestroy(tjDecompressor);
+        throw std::runtime_error("JPEG解压缩失败：" + std::string(tjGetErrorStr()));
+    }
+    std::cout << "after size:" << pixelData.size() << std::endl;
+
+    // 转换为cv::Mat（彩色图需RGB→BGR）
+    cv::Mat mat;
+    if (channels == 1) {
+        mat = cv::Mat(height, width, CV_8UC1, pixelData.data()).clone();
+    }
+    else {
+        mat = cv::Mat(height, width, CV_8UC3);
+        memcpy(mat.data, pixelData.data(), height * width * 3 * sizeof(unsigned char));
+        cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);
+    }
+
+    tjDestroy(tjDecompressor);
+    return mat;
+}
+void testCompressImage()
+{
+    std::string imgName = "D:/SLAM_LYJ/other/IMG_9179[1](1).png";
+    cv::Mat img = cv::imread(imgName);
+    ////cv::imshow("test", img);
+    ////cv::waitKey();
+    //cv::Mat img2;
+    ////cv::cvtColor(img, img2, cv::COLOR_BGR2RGB);
+    //cv::cvtColor(img, img2, cv::COLOR_BGR2GRAY);
+    //cv::imshow("test2", img2);
+    //cv::waitKey();
+    //std::vector<unsigned char> jpegData;
+    //jpegData = compressMatToJpeg(img2);
+    //std::cout << "before size:" << jpegData.size() << std::endl;
+    //COMMON_LYJ::writeBinFile<const std::vector<unsigned char>&>("D:/tmp/img.bin", jpegData);
+    //cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
+    COMMON_LYJ::CompressedImage comImg;
+    comImg.compressCVMat(img);
+    COMMON_LYJ::writeBinFile<const COMMON_LYJ::CompressedImage&>("D:/tmp/img.bin", comImg);
+
+    //std::vector<unsigned char> jpegDataIn;
+    //COMMON_LYJ::readBinFile<std::vector<unsigned char>>("D:/tmp/img.bin", jpegDataIn);
+    //cv::Mat imgIn = decompressJpegToMat(jpegDataIn);
+    //cv::imshow("decompress", imgIn);
+    //cv::waitKey();
+    COMMON_LYJ::CompressedImage comImg2;
+    COMMON_LYJ::readBinFile<COMMON_LYJ::CompressedImage>("D:/tmp/img.bin", comImg2);
+    cv::Mat img2;
+    comImg2.decompressCVMat(img2);
+    cv::imshow("decom", img2);
+    cv::waitKey();
+}
+
 int main(int argc, char *argv[])
 {
     std::cout << "Hello COMMON_LYJ" << std::endl;
 
-    testWriteBinFile();
-    testReadBinFile();
+    testCompressImage();
+    //testWriteBinFile();
+    //testReadBinFile();
     //testMultiArgs();
     // adjustPose();
     // testPLY();

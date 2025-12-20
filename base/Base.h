@@ -104,7 +104,7 @@ public:
     ~BaseLYJ() {};
 
     virtual void write_binary(std::ofstream &os) const = 0;
-    virtual void read_binary(std::ifstream &os) = 0;
+    virtual void read_binary(std::ifstream &is) = 0;
 };
 
 class SLAM_LYJ_API LYJBuffer

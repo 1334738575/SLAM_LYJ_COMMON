@@ -92,6 +92,9 @@ endif()
 set(${PROJECT_NAME}_INCLUDE_DIRS)
 set(${PROJECT_NAME}_LIBRARIES)
 set(${PROJECT_NAME}_BINARY_DIRS)
+set(libjpeg-turbo_DIR "D:/SLAM_LYJ/dependencies/libjpeg/lib/cmake/libjpeg-turbo")
+find_package(libjpeg-turbo)
+list(APPEND ${PROJECT_NAME}_LIBRARIES libjpeg-turbo::turbojpeg)
 set(Eigen3_DIR "D:/SLAM_LYJ/dependencies/Eigen/share/eigen3/cmake")
 find_package(Eigen3)
 list(APPEND ${PROJECT_NAME}_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS})
@@ -107,6 +110,7 @@ list(APPEND ${PROJECT_NAME}_INCLUDE_DIRS "D:/SLAM_LYJ/dependencies/flann/include
 list(APPEND ${PROJECT_NAME}_LIBRARIES flann::flann)
 list(APPEND ${PROJECT_NAME}_BINARY_DIRS "D:/SLAM_LYJ/dependencies/flann/bin\;")
 list(APPEND ${PROJECT_NAME}_BINARY_DIRS "D:/SLAM_LYJ/dependencies/lz4/bin\;")
+list(APPEND ${PROJECT_NAME}_BINARY_DIRS "D:/SLAM_LYJ/dependencies/libjpeg/bin\;")
 
 # ################################code##################################
 set(${PROJECT_NAME}_SRC_FILES)
