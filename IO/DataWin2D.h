@@ -4,8 +4,9 @@
 #include "base/Base.h"
 #include <fstream>
 #include <opencv2/opencv.hpp>
-#include <IO/BaseIO.h>
-#include <common/CommonAlgorithm.h>
+#include "IO/BaseIO.h"
+#include "common/CommonAlgorithm.h"
+#include "common/CompressedImage.h"
 
 namespace COMMON_LYJ
 {
@@ -149,11 +150,22 @@ namespace COMMON_LYJ
 	};
 
 
-	SLAM_LYJ_API void recordBin2D(const std::string& _dataHome2D,
+	SLAM_LYJ_API bool recordBin2D(const std::string& _dataHome2D,
 		const Data2DPoint& _data2DPoint,
 		const Data2DLine& _data2DLine,
 		const Data2DEdge& _data2DEdge);
-	SLAM_LYJ_API void readBin2D(const std::string& _dataHome2D,
+	SLAM_LYJ_API bool readBin2D(const std::string& _dataHome2D,
+		Data2DPoint& _data2DPoint,
+		Data2DLine& _data2DLine,
+		Data2DEdge& _data2DEdge);
+
+	SLAM_LYJ_API bool recordBin2DWithComImg(const std::string& _dataHome2D,
+		const std::vector<CompressedImage>& _comImgs,
+		const Data2DPoint& _data2DPoint,
+		const Data2DLine& _data2DLine,
+		const Data2DEdge& _data2DEdge);
+	SLAM_LYJ_API bool readBin2DWithComImg(const std::string& _dataHome2D,
+		std::vector<CompressedImage>& _comImgs,
 		Data2DPoint& _data2DPoint,
 		Data2DLine& _data2DLine,
 		Data2DEdge& _data2DEdge);

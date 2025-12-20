@@ -2,6 +2,7 @@
 //#include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
 #include "IO/BaseIO.h"
+#include <turbojpeg.h>
 
 namespace COMMON_LYJ
 {
@@ -238,9 +239,13 @@ namespace COMMON_LYJ
     void CompressedImage::write_binary(std::ofstream& os) const
     {
         COMMON_LYJ::writeBinDatas<const int&, const int&, const int&, const std::vector<unsigned char>&>(os, w_, h_, c_, binData_);
+        //std::cout << "write: " << w_ << " " << h_ << " " << c_ << " " << binData_.size() << std::endl;
+        return;
     }
     void CompressedImage::read_binary(std::ifstream& is)
     {
         COMMON_LYJ::readBinDatas<int, int, int, std::vector<unsigned char>>(is, w_, h_, c_, binData_);
+        //std::cout << "read: " << w_ << " " << h_ << " " << c_ << " " << binData_.size() << std::endl;
+        return;
     }
 }

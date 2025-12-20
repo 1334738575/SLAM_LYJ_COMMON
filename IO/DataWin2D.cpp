@@ -257,16 +257,24 @@ namespace COMMON_LYJ
 	}
 
 
-	SLAM_LYJ_API void recordBin2D(const std::string& _dataHome2D, const Data2DPoint& _data2DPoint, const Data2DLine& _data2DLine, const Data2DEdge& _data2DEdge)
+	SLAM_LYJ_API bool recordBin2D(const std::string& _dataHome2D, const Data2DPoint& _data2DPoint, const Data2DLine& _data2DLine, const Data2DEdge& _data2DEdge)
 	{
 		std::string data2DPath = _dataHome2D + "/FeaturesAndMatches.bin";
-		COMMON_LYJ::writeBinFile<const Data2DPoint&, const Data2DLine&, const Data2DEdge&>(data2DPath, _data2DPoint, _data2DLine, _data2DEdge);
-		return;
+		return COMMON_LYJ::writeBinFile<const Data2DPoint&, const Data2DLine&, const Data2DEdge&>(data2DPath, _data2DPoint, _data2DLine, _data2DEdge);
 	}
-	SLAM_LYJ_API void readBin2D(const std::string& _dataHome2D, Data2DPoint& _data2DPoint, Data2DLine& _data2DLine, Data2DEdge& _data2DEdge)
+	SLAM_LYJ_API bool readBin2D(const std::string& _dataHome2D, Data2DPoint& _data2DPoint, Data2DLine& _data2DLine, Data2DEdge& _data2DEdge)
 	{
 		std::string data2DPath = _dataHome2D + "/FeaturesAndMatches.bin";
-		COMMON_LYJ::readBinFile<Data2DPoint, Data2DLine, Data2DEdge>(data2DPath, _data2DPoint, _data2DLine, _data2DEdge);
-		return;
+		return COMMON_LYJ::readBinFile<Data2DPoint, Data2DLine, Data2DEdge>(data2DPath, _data2DPoint, _data2DLine, _data2DEdge);
+	}
+	SLAM_LYJ_API bool recordBin2DWithComImg(const std::string& _dataHome2D, const std::vector<CompressedImage>& _comImgs, const Data2DPoint& _data2DPoint, const Data2DLine& _data2DLine, const Data2DEdge& _data2DEdge)
+	{
+		std::string data2DPath = _dataHome2D + "/FeaturesAndMatchesWithComImgs.bin";
+		return COMMON_LYJ::writeBinFile<const std::vector<CompressedImage>& , const Data2DPoint&, const Data2DLine&, const Data2DEdge&>(data2DPath, _comImgs, _data2DPoint, _data2DLine, _data2DEdge);
+	}
+	SLAM_LYJ_API bool readBin2DWithComImg(const std::string& _dataHome2D, std::vector<CompressedImage>& _comImgs, Data2DPoint& _data2DPoint, Data2DLine& _data2DLine, Data2DEdge& _data2DEdge)
+	{
+		std::string data2DPath = _dataHome2D + "/FeaturesAndMatchesWithComImgs.bin";
+		return COMMON_LYJ::readBinFile<std::vector<CompressedImage>, Data2DPoint, Data2DLine, Data2DEdge>(data2DPath, _comImgs, _data2DPoint, _data2DLine, _data2DEdge);
 	}
 }

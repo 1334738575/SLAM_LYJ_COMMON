@@ -105,12 +105,12 @@ namespace COMMON_LYJ
 	// 第一步：定义检测模板（核心）
 	template <typename T, typename = void>
 	struct has_func : std::false_type {
-		static constexpr bool is_user = false;  // 标记：非 pointer
+		static constexpr bool is_user = false;  // 标记：非 user
 	}; // 默认：不存在
 	// 特化版本：如果 T 包含 void func()，则匹配此版本（推导成功）
 	template <typename T>
 	struct has_func<T, std::void_t<decltype(std::declval<T>().write_binary(std::declval<std::ofstream&>()))>> : std::true_type {
-		static constexpr bool is_user = true;  // 标记：非 pointer
+		static constexpr bool is_user = true;  // 标记：非 user
 	};
 	// 步骤3：简化别名（对外接口）
 	template <typename T>
@@ -285,6 +285,7 @@ namespace COMMON_LYJ
 		//std::vector
 		else if (is_vector_v<T2>)
 		{
+			writeBinBasic<size_t>(file, sz);
 			for (int i = 0; i < sz; ++i)
 				writeBin<T2>(file, value[i]);
 		}
@@ -292,17 +293,20 @@ namespace COMMON_LYJ
 		//if (tpName == "class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >")
 		else if (tpName.find("class std::basic_string<char") == 0)
 		{
+			writeBinBasic<size_t>(file, sz);
 			for (int i = 0; i < sz; ++i)
 				writeBinString<T2>(file, value[i]);
 		}
 		else if (is_ptr_v<T2>)
 		{
+			writeBinBasic<size_t>(file, sz);
 			for (int i = 0; i < sz; ++i)
 				writeBin<T2>(file, value[i]);
 		}
 		//defined by user
 		else if (has_func<T2>::value == 1)
 		{
+			writeBinBasic<size_t>(file, sz);
 			for (int i = 0; i < sz; ++i)
 				writeBin<T2>(file, value[i]);
 		}
@@ -523,6 +527,8 @@ namespace COMMON_LYJ
 		//std::vector
 		else if (is_vector_v<T2>)
 		{
+			readBinBasic<size_t>(file, sz);
+			value.resize(sz);
 			for (int i = 0; i < sz; ++i)
 				readBin<T2>(file, value[i]);
 		}
@@ -530,17 +536,23 @@ namespace COMMON_LYJ
 		//if (tpName == "class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >")
 		else if (tpName.find("class std::basic_string<char") == 0)
 		{
+			readBinBasic<size_t>(file, sz);
+			value.resize(sz);
 			for (int i = 0; i < sz; ++i)
 				readBinString<T2>(file, value[i]);
 		}
 		else if (is_ptr_v<T2>)
 		{
+			readBinBasic<size_t>(file, sz);
+			value.resize(sz);
 			for (int i = 0; i < sz; ++i)
 				readBin<T2>(file, value[i]);
 		}
 		//defined by user
 		else if (has_func<T2>::value == 1)
 		{
+			readBinBasic<size_t>(file, sz);
+			value.resize(sz);
 			for (int i = 0; i < sz; ++i)
 				readBin<T2>(file, value[i]);
 		}

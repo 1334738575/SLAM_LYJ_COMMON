@@ -2,7 +2,6 @@
 #define COMMON_LYJ_COMPRESSEDIMAGE_H
 
 
-#include <turbojpeg.h>
 #include <vector>
 #include <opencv2/core.hpp>
 #include "base/Base.h"

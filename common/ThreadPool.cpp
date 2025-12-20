@@ -182,6 +182,8 @@ void ThreadPool::process(TaskFor _task, uint64_t _s, uint64_t _e)
 	uint64_t end = start + block;
 	for (int i = 0; i < m_threadNum; ++i)
 	{
+        if (i < remain)
+            ++end;
 		auto func = [_task, start, end]() {
 			_task(start, end);
 			};
@@ -189,10 +191,7 @@ void ThreadPool::process(TaskFor _task, uint64_t _s, uint64_t _e)
         //m_thds[i]->run(_task, start, end);
         m_thds[i]->addTask(func);
         start = end;
-        if (i == m_threadNum - 1)
-            end += remain;
-        else
-		    end = start + block;
+		end = start + block;
 	}
 	finish();
 }

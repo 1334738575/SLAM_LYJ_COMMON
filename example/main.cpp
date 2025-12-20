@@ -1285,6 +1285,11 @@ cv::Mat decompressJpegToMat(const std::vector<unsigned char>& jpegData) {
 }
 void testCompressImage()
 {
+    COMMON_LYJ::CompressedImage comImgTmp;
+    std::string tpName = typeid(comImgTmp).name();
+    std::string tpName2 = typeid(decltype(comImgTmp)).name();
+    if (COMMON_LYJ::has_func<decltype(comImgTmp)>::value == 1)
+        std::cout << "111" << std::endl;;
     std::string imgName = "D:/SLAM_LYJ/other/IMG_9179[1](1).png";
     cv::Mat img = cv::imread(imgName);
     ////cv::imshow("test", img);
@@ -1301,7 +1306,10 @@ void testCompressImage()
     //cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
     COMMON_LYJ::CompressedImage comImg;
     comImg.compressCVMat(img);
-    COMMON_LYJ::writeBinFile<const COMMON_LYJ::CompressedImage&>("D:/tmp/img.bin", comImg);
+    //COMMON_LYJ::writeBinFile<const COMMON_LYJ::CompressedImage&>("D:/tmp/img.bin", comImg);
+    std::vector<COMMON_LYJ::CompressedImage> comImgs;
+    comImgs.push_back(comImg);
+    COMMON_LYJ::writeBinFile<const std::vector<COMMON_LYJ::CompressedImage>&>("D:/tmp/imgs.bin", comImgs);
 
     //std::vector<unsigned char> jpegDataIn;
     //COMMON_LYJ::readBinFile<std::vector<unsigned char>>("D:/tmp/img.bin", jpegDataIn);
@@ -1309,9 +1317,12 @@ void testCompressImage()
     //cv::imshow("decompress", imgIn);
     //cv::waitKey();
     COMMON_LYJ::CompressedImage comImg2;
-    COMMON_LYJ::readBinFile<COMMON_LYJ::CompressedImage>("D:/tmp/img.bin", comImg2);
+    //COMMON_LYJ::readBinFile<COMMON_LYJ::CompressedImage>("D:/tmp/img.bin", comImg2);
+    std::vector<COMMON_LYJ::CompressedImage> comImgs2;
+    COMMON_LYJ::readBinFile<std::vector<COMMON_LYJ::CompressedImage>>("D:/tmp/imgs.bin", comImgs2);
     cv::Mat img2;
-    comImg2.decompressCVMat(img2);
+    //comImg2.decompressCVMat(img2);
+    comImgs2[0].decompressCVMat(img2);
     cv::imshow("decom", img2);
     cv::waitKey();
 }
