@@ -164,6 +164,23 @@ private:
     std::unordered_map<std::string, std::pair<std::shared_ptr<Src>, std::string>> cache_;
 };
 
+
+class SLAM_LYJ_API LYJRAII
+{
+public:
+    LYJRAII(std::function<void()> _func)
+        :func_(_func)
+    {
+    };
+    ~LYJRAII() {
+        if (func_)
+            func_();
+    };
+
+private:
+    std::function<void()> func_ = nullptr;
+};
+
 NSP_SLAM_LYJ_END
 
 #endif // SLAM_LYJ_BASE_H

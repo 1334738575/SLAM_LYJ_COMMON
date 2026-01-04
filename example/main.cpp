@@ -43,6 +43,8 @@
 
 #include <turbojpeg.h>
 
+#include <Windows.h>
+
 void testDefine()
 {
 
@@ -1327,11 +1329,31 @@ void testCompressImage()
     cv::waitKey();
 }
 
+typedef void (*PrintLoadDll)();
+void testLoadDLL()
+{
+    HMODULE hDll = LoadLibraryA("D:/SLAM_LYJ_Packages/testDll/install/bin/testDll.dll");
+    if (hDll == NULL)
+    {
+        std::cerr << "load dll error!" << GetLastError() << std::endl;
+        return;
+    }
+    SLAM_LYJ::LYJRAII raii([&]() {FreeLibrary(hDll); });
+    PrintLoadDll pPrint = (PrintLoadDll)GetProcAddress(hDll, "print_testDll_Test");
+    if (pPrint == NULL)
+    {
+        std::cerr << "load pPrint error!" << GetLastError() << std::endl;
+        return;
+    }
+    pPrint();
+}
+
 int main(int argc, char *argv[])
 {
     std::cout << "Hello COMMON_LYJ" << std::endl;
 
-    testCompressImage();
+    testLoadDLL();
+    //testCompressImage();
     //testWriteBinFile();
     //testReadBinFile();
     //testMultiArgs();
