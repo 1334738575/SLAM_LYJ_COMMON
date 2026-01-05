@@ -23,6 +23,7 @@
 #include <common/PossionSolver.h>
 #include <common/FlannSearch.h>
 #include <common/CompressedImage.h>
+#include <common/Timer.h>
 
 #include <IO/MeshIO.h>
 #include <IO/SimpleIO.h>
@@ -1332,6 +1333,7 @@ void testCompressImage()
 typedef void (*PrintLoadDll)();
 void testLoadDLL()
 {
+    SLAM_LYJ::Timer<> q;
     HMODULE hDll = LoadLibraryA("D:/SLAM_LYJ_Packages/testDll/install/bin/testDll.dll");
     if (hDll == NULL)
     {
@@ -1346,6 +1348,9 @@ void testLoadDLL()
         return;
     }
     pPrint();
+    Sleep(10000);
+    auto t = q.elapsed();
+    std::cout << t << std::endl;
 }
 
 int main(int argc, char *argv[])
