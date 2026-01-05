@@ -89,13 +89,13 @@ struct Plane3
 		return true;
 	}
 	//点到平面投影
-	static TemVec3 pointInPlane(const TemVec3& _p) {
+	TemVec3 pointInPlane(const TemVec3& _p) {
 		TemVec3 p;
 		TYPE d = std::abs(dist2Point(_p));
 		p = _p - d * dir();
 	}
 	//投影线
-	static Line3<TYPE> lineInPlane(const Line3<TYPE>& _l) {
+	Line3<TYPE> lineInPlane(const Line3<TYPE>& _l) {
 		TYPE d1 = std::abs(dist2Point(_l.sp));
 		TYPE d2 = std::abs(dist2Point(_l.ep));
 		if (std::abs(d1) < 1e-3 && std::abs(d2) < 1e-3)
@@ -155,7 +155,7 @@ struct Plane3
 
 	void write_binary(std::ofstream& os)const {
 		os.write(reinterpret_cast<const char*>(params.data()), sizeof(TYPE) * 4);
-		os.write(reinterpret_cast<const char*>(canter.data()), sizeof(TYPE) * 3);
+		os.write(reinterpret_cast<const char*>(center.data()), sizeof(TYPE) * 3);
 	}
 	void read_binary(std::ifstream& is) {
 		is.read(reinterpret_cast<char*>(params.data()), sizeof(TYPE) * 4);

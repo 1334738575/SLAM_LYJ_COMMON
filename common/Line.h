@@ -80,7 +80,7 @@ struct Line2 {
     }
     bool isValid()
     {
-        if (length < le - 6)
+        if (length < 1e-6)
             return false;
         return true;
     }
@@ -299,7 +299,7 @@ struct Line3 {
     }
     bool isValid()
     {
-        if (length < le - 6)
+        if (length < 1e-6)
             return false;
         return true;
     }
@@ -367,7 +367,7 @@ struct Line3 {
         m << _l1.dir, _l2.dir, croDir;
         TemVec3 L = _l1.sp - _l2.sp;
         TemVec3 par = m.inverse() * L;
-        return par(2) * corDir.norm();
+        return par(2) * croDir.norm();
     }
     //ÖØµþÂÊ
     static TYPE overlapL2L(const Line3<TYPE>& _l1, const Line3<TYPE>& _l2) {
@@ -593,10 +593,10 @@ public:
         is.read(reinterpret_cast<char*>(&length), sizeof(TYPE) * 1);
     }
     friend std::ostream& operator<< (std::ostream& os, const Line3<TYPE>& cls) {
-        std::cout << "dir: " << dir(0) << " " << dir(1) << " " << dir(2) << std::endl;
-        std::cout << "sp: " << sp(0) << " " << sp(1) << " " << sp(2) << std::endl;
-        std::cout << "ep: " << ep(0) << " " << ep(1) << " " << ep(2) << std::endl;
-        std::cout << "length: " << length;
+        std::cout << "dir: " << cls.dir(0) << " " << cls.dir(1) << " " << cls.dir(2) << std::endl;
+        std::cout << "sp: " << cls.sp(0) << " " << cls.sp(1) << " " << cls.sp(2) << std::endl;
+        std::cout << "ep: " << cls.ep(0) << " " << cls.ep(1) << " " << cls.ep(2) << std::endl;
+        std::cout << "length: " << cls.length;
         return os;
     }
 
