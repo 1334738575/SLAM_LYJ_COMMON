@@ -318,157 +318,39 @@ int main2()
     return 0;
 }
 
-//#include <opencv2/opencv.hpp>
-//#include <Eigen/Sparse>
-//
-//using namespace cv;
-//using namespace Eigen;
-//
-//// 自动生成椭圆掩码（基于图像中心）
-//Mat createAutoMask(Mat& img) {
-//    Mat mask = Mat::zeros(img.size(), CV_8UC1);
-//    ellipse(mask, Point(img.cols / 2, img.rows / 2),
-//        Size(img.cols / 3, img.rows / 3),
-//        0, 0, 360, Scalar(255), -1);
-//    return mask;
-//}
-//
-//void smartPoissonBlend(Mat& target, Mat& source) {
-//    // 自动对齐到目标中心
-//    Point center(target.cols / 2 - source.cols / 2,
-//        target.rows / 2 - source.rows / 2);
-//
-//    // 自动生成掩码
-//    Mat mask = createAutoMask(source);
-//    //cv::imshow("222", mask);
-//    //cv::waitKey();
-//
-//    // 多通道处理
-//    std::vector<Mat> sourceChannels, targetChannels;
-//    split(source, sourceChannels);
-//    split(target, targetChannels);
-//
-//    for (int c = 0; c < 3; ++c) {
-//        // 构建稀疏系统
-//        SparseMatrix<double> A(source.rows * source.cols, source.rows * source.cols);
-//        VectorXd b(source.rows * source.cols);
-//        b.setZero();
-//        std::vector<Triplet<double>> coeffs;
-//
-//        int idx = 0;
-//        for (int y = 0; y < source.rows; ++y) {
-//            for (int x = 0; x < source.cols; ++x) {
-//                if (mask.at<uchar>(y, x) == 0) {
-//                    coeffs.emplace_back(idx, idx, 1);
-//                    b[idx] = targetChannels[c].at<uchar>(y + center.y, x + center.x);
-//                    idx++;
-//                    continue;
-//                }
-//
-//                double sum = 0, rhs = 0;
-//                for (int dy = -1; dy <= 1; dy += 2) {
-//                    for (int dx = -1; dx <= 1; dx += 2) {
-//                        if (x + dx >= 0 && x + dx < source.cols && y + dy >= 0 && y + dy < source.rows) {
-//                            sum += 1;
-//                            rhs += sourceChannels[c].at<uchar>(y + dy, x + dx) -
-//                                sourceChannels[c].at<uchar>(y, x);
-//                        }
-//                    }
-//                }
-//                coeffs.emplace_back(idx, idx, sum);
-//                b[idx] = rhs;
-//                idx++;
-//            }
-//        }
-//
-//        A.setFromTriplets(coeffs.begin(), coeffs.end());
-//
-//        // 求解线性系统
-//        ConjugateGradient<SparseMatrix<double>> solver;
-//        solver.compute(A);
-//        if (solver.info() != Eigen::Success)
-//            std::cout << "failed!" << std::endl;
-//        VectorXd retx = solver.solve(b);
-//        if (solver.info() != Eigen::Success)
-//            std::cout << "failed2!" << std::endl;
-//
-//        // 写入结果
-//        idx = 0;
-//        cv::Mat retM(source.rows, source.cols, CV_8UC1);
-//        retM.setTo(0);
-//        for (int y = 0; y < source.rows; ++y) {
-//            for (int x = 0; x < source.cols; ++x) {
-//                int ccc = retx[idx];
-//                retM.at<uchar>(y, x) = (uchar)ccc;
-//                if (mask.at<uchar>(y, x) != 0) {
-//                    int ty = y + center.y;
-//                    int tx = x + center.x;
-//                    if (ty >= 0 && ty < target.rows && tx >= 0 && tx < target.cols) {
-//                        targetChannels[c].at<uchar>(ty, tx) =
-//                            saturate_cast<uchar>(retx[idx]);
-//                    }
-//                }
-//                idx++;
-//            }
-//        }
-//        cv::imshow("ttt", retM);
-//        cv::waitKey();
-//        std::ofstream fff("D:/tmp/possion/x.txt");
-//        fff << retx;
-//        fff.close();
-//        continue;
-//    }
-//    merge(targetChannels, target);
-//    //cv::imshow("333", target);
-//    //cv::waitKey();
-//}
-//
-//int main3() {
-//    //Mat dst = imread("D:/tmp/possion/60.png");     // 目标图像
-//    //Mat src = imread("D:/tmp/possion/imgPart.png");     // 源图像
-//
-//    //if (src.empty() || dst.empty()) {
-//    //    std::cerr << "Error loading images!" << std::endl;
-//    //    return -1;
-//    //}
-//
-//    //// 自动创建掩码（假设源图像非透明区域为前景）
-//    //cv::Mat mask;
-//    //cv::cvtColor(src, mask, cv::COLOR_BGR2GRAY);
-//    //cv::threshold(mask, mask, 1, 255, cv::THRESH_BINARY);
-//
-//    //// 设置融合位置（默认目标图像中心）
-//    //cv::Point center(dst.cols / 2, dst.rows / 2);
-//
-//    //// 执行Poisson融合
-//    //cv::Mat result;
-//    //cv::seamlessClone(src, dst, mask, center, result, cv::NORMAL_CLONE);
-//
-//    //// 显示并保存结果
-//    //cv::imshow("Result", result);
-//    //cv::imwrite("fusion_result.jpg", result);
-//    //cv::waitKey(0);
-//    //return 0;
-//
-//    Mat target = imread("D:/tmp/possion/60.png");     // 目标图像
-//    Mat source = imread("D:/tmp/possion/imgPart.png");     // 源图像
-//
-//    // 自动缩放源图像到目标尺寸的60%
-//    double scale = 0.6 * std::min(target.rows, target.cols) /
-//        (double)std::max(source.rows, source.cols);
-//    resize(source, source, Size(), scale, scale);
-//    //cv::imshow("111", source);
-//    //cv::waitKey();
-//
-//    smartPoissonBlend(target, source);
-//
-//    imwrite("D:/tmp/possion/blended.jpg", target);
-//    return 0;
-//}
+int main3() {
+    cv::Mat dst = cv::imread("D:/tmp/possion/60.png");     // 目标图像
+    cv::Mat src = cv::imread("D:/tmp/possion/imgPart2.png");     // 源图像
+
+    if (src.empty() || dst.empty()) {
+        std::cerr << "Error loading images!" << std::endl;
+        return -1;
+    }
+
+    // 自动创建掩码（假设源图像非透明区域为前景）
+    cv::Mat mask;
+    cv::cvtColor(src, mask, cv::COLOR_BGR2GRAY);
+    cv::threshold(mask, mask, 1, 255, cv::THRESH_BINARY);
+
+    // 设置融合位置（默认目标图像中心）
+    cv::Point center(950, 1050);
+
+    // 执行Poisson融合
+    cv::Mat result;
+    cv::seamlessClone(src, dst, mask, center, result, cv::NORMAL_CLONE);
+
+    // 显示并保存结果
+    cv::imshow("Result", result);
+    cv::imwrite("D:/tmp/possion/fusion_result.png", result);
+    cv::waitKey(0);
+    return 0;
+}
 
 
-int main3()
+int testPossion()
 {
+    //main3();
+
     long start, end;
     start = clock();
 
@@ -486,13 +368,14 @@ int main3()
 
     COMMON_LYJ::ImagePossionSolver possionSolver;
     cv::Mat mask;
-    cv::Point2i center(1000, 1000);
+    cv::Point2i center(950, 1050);
     possionSolver.possionSolve(img1, img2, mask, center);
 
     end = clock();
     std::cout << "used time: " << ((double)(end - start)) / CLOCKS_PER_SEC << " second" << std::endl;
-    cv::imshow("result", img2);
-    cv::waitKey(0);
+    cv::imwrite("D:/tmp/possion/possion.png", img2);
+    //cv::imshow("result", img2);
+    //cv::waitKey(0);
     return 0;
 }
 
@@ -1357,7 +1240,7 @@ int main(int argc, char *argv[])
 {
     std::cout << "Hello COMMON_LYJ" << std::endl;
 
-    testLoadDLL();
+    //testLoadDLL();
     //testCompressImage();
     //testWriteBinFile();
     //testReadBinFile();
@@ -1365,7 +1248,7 @@ int main(int argc, char *argv[])
     // adjustPose();
     // testPLY();
     //main2();
-    //main3();
+    testPossion();
     //main4();
     // testIO();
     // testOBJ();

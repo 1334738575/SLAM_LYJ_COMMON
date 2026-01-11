@@ -45,15 +45,17 @@ namespace COMMON_LYJ
 			A_.resize(sss, sss);
 			A_.setFromTriplets(vs_.begin(), vs_.end());
 			//Eigen::MatrixXd Aden = A_.toDense();
-			//std::cout << Aden.eigenvalues() << std::endl;
-			//std::cout << Aden << std::endl;
-			//std::cout << Aden.rows() << " " << Aden.cols() << std::endl;
-			//std::cout << Bs_[0]<< std::endl;
-			//std::cout << Bs_[0].rows() << " " << Bs_[0].cols() << std::endl;
+			//for (int i = 0; i < Aden.rows(); ++i)
+			//{
+			//	for (int j = 0; j < Aden.cols(); ++j)
+			//	{
+			//		if (Aden(i, j) != Aden(j, i))
+			//			std::cout << " 111" << std::endl;
+			//	}
+			//}
 			Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
+			Eigen::FullPivLU<Eigen::MatrixXd> solver2;
 			solver.compute(A_);
-			//std::cout << solver.matrixL() << std::endl;
-			//std::cout << solver.matrixU() << std::endl;
 			if (solver.info() != Eigen::Success) {
 				std::cout << "failed!" << std::endl;
 				return false;
@@ -61,7 +63,6 @@ namespace COMMON_LYJ
 			for (int i = 0; i < DIMX; ++i)
 			{
 				Xs_[i] = solver.solve(Bs_[i]);
-				//std::cout << Xs_[i] << std::endl;
 				if (solver.info() != Eigen::Success) {
 					std::cout << "failed2!" << std::endl;
 					return false;
@@ -96,6 +97,8 @@ namespace COMMON_LYJ
 		cv::Mat* mask_ = nullptr;
 		cv::Point2i center_;
 		std::unordered_map<int, int> loc2Inds_;
+		//cv::Mat srcLap_;
+		//cv::Mat tgtLap_;
 	};
 
 
