@@ -75,6 +75,7 @@ namespace COMMON_LYJ
         // 拷贝JPEG数据到vector并释放turbojpeg缓冲区
         binData_.resize(jpegSize);
         memcpy(binData_.data(), jpegBuf, jpegSize);
+
         tjFree(jpegBuf);
         tjDestroy(tjCompressor);
 
@@ -104,7 +105,7 @@ namespace COMMON_LYJ
         }
         return true;
     }
-    bool CompressedImage::decompress(std::vector<unsigned char>& _data, int& _w, int& _h, int& _c)
+    bool CompressedImage::decompress(std::vector<unsigned char>& _data, int& _w, int& _h, int& _c) const
     {
         if (binData_.empty()) {
             throw std::runtime_error("输入JPEG数据为空");
@@ -126,8 +127,8 @@ namespace COMMON_LYJ
             tjDecompressor,
             binData_.data(),
             binData_.size(),
-            &w_,
-            &h_,
+            &_w,
+            &_h,
             &jpegSubsamp,
             &jpegColorspace
         );
@@ -139,7 +140,7 @@ namespace COMMON_LYJ
 
         // 第二步：解压缩为像素数据（优先解压为RGB/灰度）
         int pixelFormat = (jpegColorspace == TJCS_GRAY) ? TJPF_GRAY : TJPF_RGB;
-        c_ = (pixelFormat == TJPF_GRAY) ? 1 : 3;
+        _c = (pixelFormat == TJPF_GRAY) ? 1 : 3;
         int pitch = w_ * c_;
         _data.resize(h_ * pitch);
 
@@ -163,7 +164,7 @@ namespace COMMON_LYJ
         tjDestroy(tjDecompressor);
         return true;
     }
-    bool CompressedImage::decompressCVMat(cv::Mat& _img)
+    bool CompressedImage::decompressCVMat(cv::Mat& _img) const
     {
         if (binData_.empty()) {
             throw std::runtime_error("输入JPEG数据为空");
@@ -176,14 +177,17 @@ namespace COMMON_LYJ
             return false;
         }
 
+        int w;
+        int h;
+        int c;
         // 第一步：获取JPEG头信息（宽高、格式等）
         int jpegSubsamp, jpegColorspace;
         int ret = tjDecompressHeader3(
             tjDecompressor,
             binData_.data(),
             binData_.size(),
-            &w_,
-            &h_,
+            &w,
+            &h,
             &jpegSubsamp,
             &jpegColorspace
         );
@@ -195,7 +199,7 @@ namespace COMMON_LYJ
 
         // 第二步：解压缩为像素数据（优先解压为RGB/灰度）
         int pixelFormat = (jpegColorspace == TJCS_GRAY) ? TJPF_GRAY : TJPF_RGB;
-        c_ = (pixelFormat == TJPF_GRAY) ? 1 : 3;
+        c = (pixelFormat == TJPF_GRAY) ? 1 : 3;
         int pitch = w_ * c_;
         if (c_ == 3)
             _img = cv::Mat(h_, w_, CV_8UC3);
@@ -231,6 +235,65 @@ namespace COMMON_LYJ
         }
 
         tjDestroy(tjDecompressor);
+        return true;
+    }
+
+    bool CompressedImage::writeJPG(std::string _path) const
+    {
+        std::ofstream out_file(_path, std::ios::binary);
+        if (!out_file.is_open()) {
+            std::cout << "打开文件失败：" << _path << std::endl;
+            return false;
+        }
+        out_file.write(reinterpret_cast<const char*>(binData_.data()), binData_.size());
+        out_file.close();
+        return true;
+    }
+
+    bool CompressedImage::readJPG(std::string _path)
+    {
+        // 1. 读取 JPG 文件到内存缓冲区
+        std::ifstream in_file(_path, std::ios::binary | std::ios::ate);
+        if (!in_file.is_open()) {
+            std::cout << "打开 JPG 文件失败：" << _path << std::endl;
+            return false;
+        }
+
+        // 获取文件大小并分配缓冲区
+        std::streamsize file_size = in_file.tellg();
+        in_file.seekg(0, std::ios::beg);
+        binData_.resize(file_size);
+        if (!in_file.read(reinterpret_cast<char*>(binData_.data()), file_size)) {
+            std::cout << "读取 JPG 文件数据失败" << std::endl;
+            in_file.close();
+            return false;
+        }
+        in_file.close();
+
+        // 2. 创建 TurboJPEG 解码器句柄
+        tjhandle tj_handle = tjInitDecompress();
+        if (tj_handle == nullptr) {
+            std::cout << "创建 TurboJPEG 解码器失败：" << tjGetErrorStr() << std::endl;
+            return false;
+        }
+
+        // 3. 先获取 JPG 文件的基本信息（宽、高、子采样、格式）
+        int subsamp, colorspace;
+        int ret = tjDecompressHeader3(tj_handle,
+            binData_.data(),
+            binData_.size(),
+            &w_,
+            &h_,
+            &subsamp,
+            &colorspace);
+        if (ret != 0) {
+            std::cout << "解析 JPG 头部失败：" << tjGetErrorStr() << std::endl;
+            tjDestroy(tj_handle);
+            return false;
+        }
+        int pixelFormat = (colorspace == TJCS_GRAY) ? TJPF_GRAY : TJPF_RGB;
+        c_ = (pixelFormat == TJPF_GRAY) ? 1 : 3;
+
         return true;
     }
 

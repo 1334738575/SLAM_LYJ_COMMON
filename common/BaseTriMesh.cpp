@@ -231,6 +231,68 @@ void BaseTriMesh::subBaseTriMeshByFaces(const std::vector<uint32_t>& _fIds, Base
 	}
 }
 
+bool BaseTriMesh::hasTexture() const
+{
+	return m_hasTexture;
+}
+
+void BaseTriMesh::enableTexture()
+{
+	m_hasTexture = true;
+	//后续添加默认纹理
+}
+
+void BaseTriMesh::disableTexture()
+{
+	m_hasTexture = false;
+	m_textureCoords = std::vector<Eigen::Vector2f>();
+	m_texture = COMMON_LYJ::CompressedImage();
+}
+
+void BaseTriMesh::setTexture(const std::vector<Eigen::Vector2f>& _textureCoords, const std::vector<BaseTriTextureUV>& _triUVs, const COMMON_LYJ::CompressedImage& _texture)
+{
+	m_hasTexture = true;
+	m_textureCoords = _textureCoords;
+	m_triUVs = _triUVs;
+	m_texture = _texture;
+}
+
+std::vector<Eigen::Vector2f>& BaseTriMesh::getTextureCoords()
+{
+	// TODO: 在此处插入 return 语句
+	return m_textureCoords;
+}
+
+const std::vector<Eigen::Vector2f>& BaseTriMesh::getTextureCoords() const
+{
+	// TODO: 在此处插入 return 语句
+	return m_textureCoords;
+}
+
+COMMON_LYJ::CompressedImage& BaseTriMesh::getTexture()
+{
+	// TODO: 在此处插入 return 语句
+	return m_texture;
+}
+
+const COMMON_LYJ::CompressedImage& BaseTriMesh::getTexture() const
+{
+	// TODO: 在此处插入 return 语句
+	return m_texture;
+}
+
+std::vector<BaseTriTextureUV>& BaseTriMesh::getTriUVs()
+{
+	// TODO: 在此处插入 return 语句
+	return m_triUVs;
+}
+
+const std::vector<BaseTriTextureUV>& BaseTriMesh::getTriUVs() const
+{
+	// TODO: 在此处插入 return 语句
+	return m_triUVs;
+}
+
 void BaseTriMesh::reset()
 {
 	m_vertexs.clear();

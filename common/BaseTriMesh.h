@@ -2,6 +2,7 @@
 #define SLAM_LYJ_BASETRIMESH_H
 
 #include "Cloud.h"
+#include "CompressedImage.h"
 
 NSP_SLAM_LYJ_MATH_BEGIN
 
@@ -20,6 +21,23 @@ struct SLAM_LYJ_API BaseTriFace
 		vId_[2] = _v3;
 	}
 	uint32_t vId_[3];
+};
+
+struct SLAM_LYJ_API BaseTriTextureUV
+{
+	BaseTriTextureUV()
+	{
+		uvId_[0] = -1;
+		uvId_[1] = -1;
+		uvId_[2] = -1;
+	}
+	BaseTriTextureUV(uint32_t _uv1, uint32_t _uv2, uint32_t _uv3)
+	{
+		uvId_[0] = _uv1;
+		uvId_[1] = _uv2;
+		uvId_[2] = _uv3;
+	}
+	uint32_t uvId_[3];
 };
 
 class SLAM_LYJ_API BaseTriMesh : public Cloud
@@ -55,6 +73,16 @@ public:
 	bool calculateVNormals();
 	const int getFn() const;
 	void subBaseTriMeshByFaces(const std::vector<uint32_t>& _fIds, BaseTriMesh& _outMesh) const;
+	bool hasTexture() const;
+	void enableTexture();
+	void disableTexture();
+	void setTexture(const std::vector<Eigen::Vector2f>& _textureCoords, const std::vector<BaseTriTextureUV>& _triUVs, const COMMON_LYJ::CompressedImage& _texture);
+	std::vector<Eigen::Vector2f>& getTextureCoords();
+	const std::vector<Eigen::Vector2f>& getTextureCoords() const;
+	COMMON_LYJ::CompressedImage& getTexture();
+	const COMMON_LYJ::CompressedImage& getTexture() const;
+	std::vector<BaseTriTextureUV>& getTriUVs();
+	const std::vector<BaseTriTextureUV>& getTriUVs() const;
 
 	// inherited from Cloud
 	virtual void reset();
@@ -67,9 +95,11 @@ private:
 	bool m_hasFCtr = false;
 	std::vector<Eigen::Vector3f> m_centers;
 
-	bool m_hasTexture = false;
-	std::vector<Eigen::Vector2f> m_textureCoords;
 	// TODO 纹理对象
+	bool m_hasTexture = false;
+	std::vector<Eigen::Vector2f> m_textureCoords;//(-1,-1) 无效
+	std::vector<BaseTriTextureUV> m_triUVs;
+	COMMON_LYJ::CompressedImage m_texture;
 };
 
 inline void BaseTriMesh::setFaces(const std::vector<BaseTriFace> &_faces)

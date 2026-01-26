@@ -23,8 +23,10 @@ namespace COMMON_LYJ
 
 		bool compress(const unsigned char* _data, const int _w, const int _h, const int _c, const int _quality=95);
 		bool compressCVMat(const cv::Mat& _img);
-		bool decompress(std::vector<unsigned char>& _data, int& _w, int& _h, int& _c);
-		bool decompressCVMat(cv::Mat& _img);
+		bool decompress(std::vector<unsigned char>& _data, int& _w, int& _h, int& _c) const;
+		bool decompressCVMat(cv::Mat& _img) const;
+		bool writeJPG(std::string _path) const;
+		bool readJPG(std::string _path);
 
 		void write_binary(std::ofstream& os) const;
 		void read_binary(std::ifstream& is);

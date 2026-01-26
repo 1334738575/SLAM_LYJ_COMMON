@@ -378,6 +378,9 @@ SLAM_LYJ_API void writePLYMesh(const std::string& filename, const BaseTriMesh& b
 SLAM_LYJ_API void readPLYMesh(const std::string& filename, BaseTriMesh& btm);
 
 
+SLAM_LYJ_API bool writeOBJMesh(const std::string& filename, const BaseTriMesh& btm);
+SLAM_LYJ_API bool readOBJMesh(const std::string& filename, BaseTriMesh& btm);
+
 NSP_SLAM_LYJ_END
 
 

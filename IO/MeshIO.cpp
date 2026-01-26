@@ -1,4 +1,5 @@
 #include "MeshIO.h"
+#include "STLPlus/include/file_system.h"
 
 NSP_SLAM_LYJ_BEGIN
 
@@ -494,6 +495,176 @@ SLAM_LYJ_API void readPLYMesh(const std::string &filename, BaseTriMesh &btm)
         return;
     }
     return;
+}
+
+SLAM_LYJ_API bool writeOBJMesh(const std::string& filename, const BaseTriMesh& btm)
+{
+    if (!btm.hasTexture())
+        return false;
+    int vSz = btm.getVn();
+    int fSz = btm.getFn();
+    const auto& ps = btm.getVertexs();
+    const auto& fs = btm.getFaces();
+
+    std::string fName = filename;
+    if (stlplus::is_relative_path(filename))
+        fName = stlplus::filespec_to_path(filename);
+    std::string dirPath = stlplus::folder_part(fName);
+    std::string fileBaseName = stlplus::basename_part(fName);
+
+    std::string imgPath = dirPath + "/" + fileBaseName + ".jpg";
+    const COMMON_LYJ::CompressedImage& img = btm.getTexture();
+    img.writeJPG(imgPath);
+
+    std::string mtlPath = dirPath + "/" + fileBaseName + ".mtl";
+    std::ofstream mtlf(mtlPath);
+    mtlf << "newmtl _texture" << std::endl;
+    mtlf << "Kd 1.00 1.00 1.00" << std::endl;
+    mtlf << "Ka 0.00 0.00 0.00" << std::endl;
+    mtlf << "Tf 1.00 1.00 1.00" << std::endl;
+    mtlf << "Ni 1.00" << std::endl;
+    mtlf << "map_Kd " << fileBaseName << ".jpg" << std::endl;
+    mtlf.close();
+
+    const auto& uvs = btm.getTextureCoords();
+    const auto& triUVs = btm.getTriUVs();
+    std::string objPath = dirPath + "/" + fileBaseName + ".obj";
+    // 1. 写入OBJ文件
+    std::ofstream obj_file(objPath);
+    if (!obj_file.is_open()) {
+        std::cout << "无法创建OBJ文件: " + objPath << std::endl;
+        return true;
+    }
+    // OBJ文件头
+    obj_file << "mtllib " << fileBaseName << ".mtl" << std::endl;
+    // 写入顶点
+    for (const auto& v : ps) {
+        obj_file << "v " << v.x() << " " << v.y() << " " << v.z() << std::endl;
+    }
+    // 写入纹理坐标
+    for (const auto& vt : uvs) {
+        obj_file << "vt " << vt.x() << " " << vt.y() << std::endl;
+    }
+    obj_file << "usemtl _texture" << std::endl;
+
+    for (int i = 0; i < fSz; ++i) {
+        const auto& vIds = fs[i];
+        const auto& uvIds = triUVs[i];
+        //bool bWrite = true;
+        //for (int j = 0; j < 3; ++j)
+        //{
+        //    if (vIds.vId_[j] < 0 || uvs[vIds.vId_[j]](0) < 0 || uvs[vIds.vId_[j]](1) < 0)
+        //    {
+        //        bWrite = false;
+        //        break;
+        //    }
+        //}
+        //if (!bWrite)
+        //    continue;
+        obj_file << "f ";
+        for (int j = 0; j < 3; ++j) 
+        {
+            // 格式：顶点索引/纹理索引/法线索引
+            obj_file << (vIds.vId_[j] + 1);
+            if (uvIds.uvId_[j] >= 0)
+            {
+                obj_file << "/" << (uvIds.uvId_[j] + 1);
+            }
+            else {
+                obj_file << "/"; // 保持格式统一
+            }
+            obj_file << " ";
+        }
+        obj_file << std::endl;
+    }
+
+    obj_file.close();
+
+    std::cout << "成功写入OBJ文件: " << fName << std::endl;
+
+    return true;
+}
+
+SLAM_LYJ_API bool readOBJMesh(const std::string& filename, BaseTriMesh& btm)
+{
+    btm.enableTexture();
+    auto& ps = btm.getVertexs();
+    auto& fs = btm.getFaces();
+    auto& uvs = btm.getTextureCoords();
+    auto& triUVS = btm.getTriUVs();
+    COMMON_LYJ::CompressedImage& img = btm.getTexture();
+
+    std::string fName = filename;
+    if (stlplus::is_relative_path(filename))
+        fName = stlplus::filespec_to_path(filename);
+    std::string dirPath = stlplus::folder_part(fName);
+    std::string fileBaseName = stlplus::basename_part(fName);
+
+    std::string imgPath = dirPath + "/" + fileBaseName + ".jpg";
+    img.readJPG(imgPath);
+
+    std::string objPath = dirPath + "/" + fileBaseName + ".obj";
+    // 1. 写入OBJ文件
+    std::ifstream obj_file(objPath);
+    if (!obj_file.is_open()) {
+        std::cout << "无法读取OBJ文件: " + objPath << std::endl;
+        return true;
+    }
+
+    // OBJ文件头
+    std::string line;
+    float x, y, z;
+    float u, v;
+    uint32_t vIds[3];
+    uint32_t uvIds[3];
+    while (std::getline(obj_file, line)) {
+        if (line.empty() || line[0] == '#') continue;
+
+        std::istringstream line_stream(line);
+        std::string token;
+        line_stream >> token;
+
+        // 顶点 (v x y z)
+        if (token == "v") {
+            line_stream >> x >> y >> z;
+            ps.emplace_back(x, y, z);
+        }
+        // 纹理坐标 (vt u v)
+        else if (token == "vt") {
+            line_stream >> u >> v;
+            uvs.emplace_back(u, v);
+        }
+        // 面 (f v1/vt1 v2/vt2 ...)
+        else if (token == "f") {
+            std::string face_token;
+            int cnt = 0;
+            while (line_stream >> face_token) {
+                // 分割 "顶点索引/纹理索引/法线索引"（兼容无法线的情况：v1/vt1）
+                std::vector<std::string> parts;
+                size_t pos = 0;
+                while ((pos = face_token.find('/')) != std::string::npos) {
+                    parts.push_back(face_token.substr(0, pos));
+                    face_token.erase(0, pos + 1);
+                }
+                parts.push_back(face_token);
+
+                // 解析索引（OBJ从1开始，转0开始）
+                int v_idx = std::stoi(parts[0]) - 1;
+                int vt_idx = (parts.size() > 1 && !parts[1].empty()) ? std::stoi(parts[1]) - 1 : -1;
+
+                vIds[cnt] = v_idx;
+                uvIds[cnt] = vt_idx;
+                ++cnt;
+            }
+            fs.emplace_back(vIds[0], vIds[1], vIds[2]);
+            triUVS.emplace_back(uvIds[0], uvIds[1], uvIds[2]);
+        }
+    }
+    obj_file.close();
+
+    std::cout << "成功读取OBJ文件: " << fName << std::endl;
+
+    return true;
 }
 
 NSP_SLAM_LYJ_END
