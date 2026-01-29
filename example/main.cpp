@@ -24,6 +24,7 @@
 #include <common/FlannSearch.h>
 #include <common/CompressedImage.h>
 #include <common/Timer.h>
+#include <common/AdjointFinder.h>
 
 #include <IO/MeshIO.h>
 #include <IO/SimpleIO.h>
@@ -1552,6 +1553,14 @@ void testLoadDLL()
     Sleep(10000);
     auto t = q.elapsed();
     std::cout << t << std::endl;
+}
+
+
+void testAdjointFinder()
+{
+    cv::Mat mmm;
+    COMMON_LYJ::AdjointFinderCV2DSimple af;
+    af.setData(mmm);
 }
 
 int main(int argc, char *argv[])
