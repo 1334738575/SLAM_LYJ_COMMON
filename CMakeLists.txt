@@ -40,7 +40,7 @@ endif()
 set(${PROJECT_NAME}_LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/Output)
 set(${PROJECT_NAME}_CMAKE_FILE)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install)
-
+option(USE_SQLITE3 "use sqliter3." ON)
 
 #load config
 set(SLAM_LYJ_HOME_PATH "${CMAKE_CURRENT_SOURCE_DIR}/")
@@ -108,6 +108,12 @@ set(flann_DIR "D:/SLAM_LYJ/dependencies/flann/lib/cmake/flann")
 find_package(flann)
 list(APPEND ${PROJECT_NAME}_INCLUDE_DIRS "D:/SLAM_LYJ/dependencies/flann/include")
 list(APPEND ${PROJECT_NAME}_LIBRARIES flann::flann)
+if(USE_SQLITE3)
+    list(APPEND CMAKE_MODULE_PATH "D:/SLAM_LYJ/dependencies/sqlite3")
+    find_package(sqlite3)
+    list(APPEND ${PROJECT_NAME}_LIBRARIES sqlite3::sqlite3)
+    list(APPEND ${PROJECT_NAME}_BINARY_DIRS "${sqlite3_BINARY_DIR}\;")
+endif()
 list(APPEND ${PROJECT_NAME}_BINARY_DIRS "D:/SLAM_LYJ/dependencies/flann/bin\;")
 list(APPEND ${PROJECT_NAME}_BINARY_DIRS "D:/SLAM_LYJ/dependencies/lz4/bin\;")
 list(APPEND ${PROJECT_NAME}_BINARY_DIRS "D:/SLAM_LYJ/dependencies/libjpeg/bin\;")
@@ -137,6 +143,9 @@ if(DEFINED ${PROJECT_NAME}_LIBRARY_OUTPUT_PATH)
         ARCHIVE_OUTPUT_DIRECTORY ${${PROJECT_NAME}_LIBRARY_OUTPUT_PATH}
         RUNTIME_OUTPUT_DIRECTORY ${${PROJECT_NAME}_LIBRARY_OUTPUT_PATH}
     )
+endif()
+if(USE_SQLITE3)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE USESQLITE3)
 endif()
 
 # ################################example##################################

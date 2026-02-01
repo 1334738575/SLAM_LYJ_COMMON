@@ -29,6 +29,7 @@
 #include <IO/MeshIO.h>
 #include <IO/SimpleIO.h>
 #include <IO/BaseIO.h>
+#include <IO/ColmapIO.h>
 
 #include <nlohmann/json.hpp>
 
@@ -1563,11 +1564,35 @@ void testAdjointFinder()
     af.setData(mmm);
 }
 
+void testColmapIO()
+{
+    COMMON_LYJ::ColmapData colmapData;
+    colmapData.readFromColmap("D:/gsWin/gaussian-splatting/gaussian-splatting/data/mask/sparse/0");
+    return;
+
+    COMMON_LYJ::ColmapDataBase colmapDB;
+    colmapDB.openDB("D:/gsWin/gaussian-splatting/gaussian-splatting/data/mask/distorted/database.db");
+    colmapDB.query_all_tables();
+    //colmapDB.query_table_schema("images");
+    //colmapDB.query_table_schema("cameras");
+    //colmapDB.query_table_schema("keypoints");
+    colmapDB.query_table_schema("matches");
+    colmapDB.query_table_schema("two_view_geometries");
+    //colmapDB.query_images(10);    // 查询前10张图像
+    //colmapDB.query_cameras();     // 查询所有相机参数
+    //colmapDB.query_keypoint_count(10); // 查询图像ID=1的特征点数量
+    //std::vector<Eigen::Vector2f> ps;
+    //colmapDB.get_keypoint_coords(10, ps);
+    colmapDB.readDataBase();
+    return;
+}
+
 int main(int argc, char *argv[])
 {
     std::cout << "Hello COMMON_LYJ" << std::endl;
 
-    OBJ::main5();
+    testColmapIO();
+    //OBJ::main5();
     //testLoadDLL();
     //testCompressImage();
     //testWriteBinFile();
