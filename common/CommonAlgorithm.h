@@ -203,6 +203,7 @@ public:
 	}
 	inline void reset() { m_flags.assign(m_flags.size(), 0); }
 	inline const int size() { return m_size; }
+	inline const unsigned char* data() const { return m_flags.data(); }
 	bool operator[](int _i)
 	{
 		int s = _i >> 3;
