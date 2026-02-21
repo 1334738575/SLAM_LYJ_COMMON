@@ -210,6 +210,12 @@ public:
 		int rs = _i % 8;
 		return (m_flags[s] >> rs) & 1;
 	}
+	bool operator[](int _i) const
+	{
+		int s = _i >> 3;
+		int rs = _i % 8;
+		return (m_flags[s] >> rs) & 1;
+	}
 	void setFlag(int _i, bool _b)
 	{
 		int s = _i >> 3;

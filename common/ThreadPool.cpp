@@ -210,12 +210,19 @@ void ThreadPool::processWithId(TaskForWithId _task, uint64_t _s, uint64_t _e)
     uint64_t remain = total % m_threadNum;
     uint64_t start = _s;
     uint64_t end = start + block;
+    auto funcEmpty = []()
+    {
+        return;
+    };
     for (int i = 0; i < m_threadNum; ++i)
     {
         if (i < remain)
             ++end;
         if (start == end)
+        {
+            m_thds[i]->addTask(funcEmpty);
             continue;
+        }
         auto func = [_task, start, end, i]() {
         	_task(start, end, i);
         	};
