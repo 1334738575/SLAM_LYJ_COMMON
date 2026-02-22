@@ -16,32 +16,32 @@
 #include "CameraModule.h"
 #include "config/config.h"
 
-NSP_SLAM_LYJ_BEGIN
-
+namespace COMMON_LYJ
+{
 #define SYS_VERSION 1
 #define SYS_DEBUG
 
-class SLAM_LYJ_API GlobalInnerOption
-{
-public:
-	std::string sysName = "";
-	std::string sysHomePath = SLAM_LYJ_HOME_PATH;
-
-public:
-	GlobalInnerOption() {}
-	~GlobalInnerOption() {}
-
-	static GlobalInnerOption *get()
+	class SLAM_LYJ_API GlobalInnerOption
 	{
-		static GlobalInnerOption opt;
-		return &opt;
-	}
+	public:
+		std::string sysName = "";
+		std::string sysHomePath = SLAM_LYJ_HOME_PATH;
 
-private:
-};
+	public:
+		GlobalInnerOption() {}
+		~GlobalInnerOption() {}
 
-NSP_SLAM_LYJ_END
+		static GlobalInnerOption* get()
+		{
+			static GlobalInnerOption opt;
+			return &opt;
+		}
 
-#define LYJOPT SLAM_LYJ::GlobalInnerOption::get()
+	private:
+	};
+
+}
+
+#define LYJOPT COMMON_LYJ::GlobalInnerOption::get()
 
 #endif

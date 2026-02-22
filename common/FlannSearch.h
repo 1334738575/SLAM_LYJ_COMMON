@@ -13,7 +13,7 @@
 #include <boost/iostreams/device/mapped_file.hpp>
 #endif
 
-namespace SLAM_LYJ
+namespace COMMON_LYJ
 {
 
     template<typename T, int DIM>

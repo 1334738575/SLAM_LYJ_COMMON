@@ -3,7 +3,7 @@
 
 #include <chrono>   // 核心头文件
 
-namespace SLAM_LYJ
+namespace COMMON_LYJ
 {
     /// <summary>
     /// _EXPORT_STD using nanoseconds  = duration<long long, nano>;

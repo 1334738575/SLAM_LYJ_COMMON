@@ -5,30 +5,30 @@
 #include "base/Pose.h"
 
 
-NSP_SLAM_LYJ_MATH_BEGIN
-
-template<typename T>
-struct Cylinder
+namespace COMMON_LYJ
 {
-    //using TYPE = double;
-    using TemVec2 = Eigen::Matrix<T, 2, 1>;
-    using TemVec3 = Eigen::Matrix<T, 3, 1>;
-    using TemVec4 = Eigen::Matrix<T, 4, 1>;
-    using TemMat22 = Eigen::Matrix<T, 2, 2>;
-    using TemMat23 = Eigen::Matrix<T, 2, 3>;
-    using TemMat33 = Eigen::Matrix<T, 3, 3>;
-    using TemMat34 = Eigen::Matrix<T, 3, 4>;
-    using TemMat44 = Eigen::Matrix<T, 4, 4>;
+    template<typename T>
+    struct Cylinder
+    {
+        //using TYPE = double;
+        using TemVec2 = Eigen::Matrix<T, 2, 1>;
+        using TemVec3 = Eigen::Matrix<T, 3, 1>;
+        using TemVec4 = Eigen::Matrix<T, 4, 1>;
+        using TemMat22 = Eigen::Matrix<T, 2, 2>;
+        using TemMat23 = Eigen::Matrix<T, 2, 3>;
+        using TemMat33 = Eigen::Matrix<T, 3, 3>;
+        using TemMat34 = Eigen::Matrix<T, 3, 4>;
+        using TemMat44 = Eigen::Matrix<T, 4, 4>;
 
-	T len_;
-	T radius;
-
-
-	Cylinder() {};
-
-};
+        T len_;
+        T radius;
 
 
-NSP_SLAM_LYJ_MATH_END
+        Cylinder() {};
+
+    };
+
+
+}
 
 #endif

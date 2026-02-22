@@ -45,7 +45,7 @@ namespace COMMON_LYJ
 			std::pair<int, int> frameIdPair;
 			for (const auto& matchest : allMatches)
 			{
-				frameIdPair = SLAM_LYJ::SLAM_LYJ_MATH::int642TwoImagePair(matchest.first);
+				frameIdPair = int642TwoImagePair(matchest.first);
 				COMMON_LYJ::writeBinDatas<const int&, const int&>(os, frameIdPair.first, frameIdPair.second);
 				const auto& matches = matchest.second;
 				matchSize = matches.size();
@@ -76,7 +76,7 @@ namespace COMMON_LYJ
 			uint64_t pairId = 0;
 			for (int i = 0; i < framePair; ++i) {
 				COMMON_LYJ::readBinDatas<int&, int&>(is, frameId1, frameId2);
-				pairId = SLAM_LYJ::SLAM_LYJ_MATH::imagePair2Int64(frameId1, frameId2);
+				pairId = imagePair2Int64(frameId1, frameId2);
 				COMMON_LYJ::readBin<int&>(is, matchSize);
 				allMatches[pairId].resize(matchSize);
 				allImgPairs[frameId1].emplace_back(frameId2, pairId);

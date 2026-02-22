@@ -69,118 +69,95 @@ typedef Eigen::Matrix<float, 3, 4> Matrix3x4f;
         return false;                                                                 \
     }
 
-// namespace
-#define NSP_SLAM_LYJ_BEGIN \
-    namespace SLAM_LYJ     \
-    {
-#define NSP_SLAM_LYJ_END }
-
-#define NSP_SLAM_LYJ_MATH_BEGIN \
-    namespace SLAM_LYJ          \
-    {                           \
-        namespace SLAM_LYJ_MATH \
-        {
-#define NSP_SLAM_LYJ_MATH_END \
-    }                         \
-    }
-
-#define NSP_SLAM_LYJ_DEBUGGER_BEGIN \
-    namespace SLAM_LYJ              \
-    {                               \
-        namespace SLAM_LYJ_DEBUGGER \
-        {
-#define NSP_SLAM_LYJ_DEBUGGER_END \
-    }                             \
-    }
-
 // base class
-NSP_SLAM_LYJ_BEGIN
-class BaseLYJ
+namespace COMMON_LYJ
 {
-private:
-    /* data */
-public:
-    BaseLYJ(/* args */) {};
-    ~BaseLYJ() {};
+    class BaseLYJ
+    {
+    private:
+        /* data */
+    public:
+        BaseLYJ(/* args */) {};
+        ~BaseLYJ() {};
 
-    virtual void write_binary(std::ofstream &os) const = 0;
-    virtual void read_binary(std::ifstream &is) = 0;
-};
+        virtual void write_binary(std::ofstream& os) const = 0;
+        virtual void read_binary(std::ifstream& is) = 0;
+    };
 
-class SLAM_LYJ_API LYJBuffer
-{
-public:
-    class Src
+    class SLAM_LYJ_API LYJBuffer
     {
     public:
-        Src() {}
-        ~Src()
+        class Src
         {
-            // std::cout << "release Src." << std::endl;
+        public:
+            Src() {}
+            ~Src()
+            {
+                // std::cout << "release Src." << std::endl;
+            }
+
+            virtual void forInherit() {}
+        };
+        template <typename T>
+        class Property : public Src
+        {
+        public:
+            Property()
+            {
+            }
+            ~Property()
+            {
+                // std::cout << "release Property." << std::endl;
+            }
+            T obj_;
+        };
+        LYJBuffer() {};
+        ~LYJBuffer() {};
+
+        template <typename T>
+        T* get(const std::string _name)
+        {
+            if (cache_.count(_name) == 0 || cache_[_name].second != typeid(T).name())
+                return nullptr;
+            Property<T>* pro = dynamic_cast<Property<T> *>(cache_[_name].first.get());
+            return &pro->obj_;
         }
 
-        virtual void forInherit() {}
+        template <typename T>
+        T* alloc(const std::string _name)
+        {
+            auto ret = get<T>(_name);
+            if (ret)
+                return ret;
+            if (cache_.count(_name) != 0)
+                return nullptr;
+            Property<T>* pro = new Property<T>();
+            cache_[_name].first.reset((Src*)pro);
+            cache_[_name].second = typeid(T).name();
+            return &pro->obj_;
+        }
+
+    private:
+        std::unordered_map<std::string, std::pair<std::shared_ptr<Src>, std::string>> cache_;
     };
-    template <typename T>
-    class Property : public Src
+
+
+    class SLAM_LYJ_API LYJRAII
     {
     public:
-        Property()
+        LYJRAII(std::function<void()> _func)
+            :func_(_func)
         {
-        }
-        ~Property()
-        {
-            // std::cout << "release Property." << std::endl;
-        }
-        T obj_;
-    };
-    LYJBuffer() {};
-    ~LYJBuffer() {};
+        };
+        ~LYJRAII() {
+            if (func_)
+                func_();
+        };
 
-    template <typename T>
-    T *get(const std::string _name)
-    {
-        if (cache_.count(_name) == 0 || cache_[_name].second != typeid(T).name())
-            return nullptr;
-        Property<T> *pro = dynamic_cast<Property<T> *>(cache_[_name].first.get());
-        return &pro->obj_;
-    }
-
-    template <typename T>
-    T *alloc(const std::string _name)
-    {
-        auto ret = get<T>(_name);
-        if (ret)
-            return ret;
-        if (cache_.count(_name) != 0)
-            return nullptr;
-        Property<T> *pro = new Property<T>();
-        cache_[_name].first.reset((Src *)pro);
-        cache_[_name].second = typeid(T).name();
-        return &pro->obj_;
-    }
-
-private:
-    std::unordered_map<std::string, std::pair<std::shared_ptr<Src>, std::string>> cache_;
-};
-
-
-class SLAM_LYJ_API LYJRAII
-{
-public:
-    LYJRAII(std::function<void()> _func)
-        :func_(_func)
-    {
-    };
-    ~LYJRAII() {
-        if (func_)
-            func_();
+    private:
+        std::function<void()> func_ = nullptr;
     };
 
-private:
-    std::function<void()> func_ = nullptr;
-};
-
-NSP_SLAM_LYJ_END
+}
 
 #endif // SLAM_LYJ_BASE_H

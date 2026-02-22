@@ -147,7 +147,7 @@ namespace COMMON_LYJ
 	template<typename T>
 	static void writeBinUser(std::ofstream& file, const T& value)
 	{
-		//SLAM_LYJ::BaseLYJ* ptr = (SLAM_LYJ::BaseLYJ*)(&value);
+		//COMMON_LYJ::BaseLYJ* ptr = (COMMON_LYJ::BaseLYJ*)(&value);
 		//ptr->write_binary(file);
 		value.write_binary(file);
 	}
@@ -387,7 +387,7 @@ namespace COMMON_LYJ
 	template<typename T>
 	static void readBinUser(std::ifstream& file, T& value)
 	{
-		//SLAM_LYJ::BaseLYJ* ptr = (SLAM_LYJ::BaseLYJ*)(&value);
+		//COMMON_LYJ::BaseLYJ* ptr = (COMMON_LYJ::BaseLYJ*)(&value);
 		//ptr->read_binary(file);
 		value.read_binary(file);
 	}

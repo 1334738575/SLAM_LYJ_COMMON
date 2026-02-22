@@ -1,8 +1,9 @@
 #include "Grid.h"
 
-NSP_SLAM_LYJ_MATH_BEGIN
+namespace COMMON_LYJ
+{
 
 
 
 
-NSP_SLAM_LYJ_MATH_END
+}

@@ -1,7 +1,8 @@
 #include "PreDefine.h"
 
-NSP_SLAM_LYJ_BEGIN
+namespace COMMON_LYJ
+{
 
-// GlobalInnerOption GlobalInnerOption::opt_;
+	// GlobalInnerOption GlobalInnerOption::opt_;
 
-NSP_SLAM_LYJ_END
+}

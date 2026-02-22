@@ -55,35 +55,34 @@ void testDefine()
 
     std::cout << SLAM_LYJ_HOME_PATH << std::endl;
 
-    SLAM_LYJ::LYJBuffer buffer;
-    SLAM_LYJ::CameraType camType = SLAM_LYJ::CameraType::FISHEYE;
-    SLAM_LYJ::PinholeCamera cam(100, 100, std::vector<double>{1, 1, 1, 1});
-    SLAM_LYJ::Pose3D pose3D;
+    COMMON_LYJ::LYJBuffer buffer;
+    COMMON_LYJ::CameraType camType = COMMON_LYJ::CameraType::FISHEYE;
+    COMMON_LYJ::PinholeCamera cam(100, 100, std::vector<double>{1, 1, 1, 1});
+    COMMON_LYJ::Pose3D pose3D;
     std::cout << LYJOPT->sysHomePath << std::endl;
-    SLAM_LYJ::TrianglerPoint3DOption triOpt;
-    SLAM_LYJ::TrianglerLine3D triangler;
+    COMMON_LYJ::TrianglerPoint3DOption triOpt;
+    COMMON_LYJ::TrianglerLine3D triangler;
 
-    SLAM_LYJ::SLAM_LYJ_MATH::Cloud cld;
-    SLAM_LYJ::SLAM_LYJ_MATH::Grid<float, 2> grid;
-    SLAM_LYJ::SLAM_LYJ_MATH::Diffuser2D diffuser(100, 100);
-    SLAM_LYJ::SLAM_LYJ_MATH::BaseTriMesh btm;
-    SLAM_LYJ::SLAM_LYJ_MATH::KdTree2d kdTree;
-    SLAM_LYJ::SLAM_LYJ_MATH::KdTree<float, 3> kdTree3D;
-    SLAM_LYJ::SLAM_LYJ_MATH::Line2d line2d;
-    SLAM_LYJ::SLAM_LYJ_MATH::Line3<float> line3f;
-    SLAM_LYJ::SLAM_LYJ_MATH::ThreadPool threadPool(4);
-    SLAM_LYJ::SLAM_LYJ_MATH::svd_icp(
+    COMMON_LYJ::Cloud cld;
+    COMMON_LYJ::Grid<float, 2> grid;
+    COMMON_LYJ::Diffuser2D diffuser(100, 100);
+    COMMON_LYJ::BaseTriMesh btm;
+    COMMON_LYJ::KdTree2d kdTree;
+    COMMON_LYJ::KdTree<float, 3> kdTree3D;
+    COMMON_LYJ::Line2d line2d;
+    COMMON_LYJ::Line3<float> line3f;
+    COMMON_LYJ::ThreadPool threadPool(4);
+    COMMON_LYJ::svd_icp(
         {Eigen::Vector3f(1, 2, 3), Eigen::Vector3f(4, 5, 6)},
         {Eigen::Vector3f(7, 8, 9), Eigen::Vector3f(10, 11, 12)});
-    SLAM_LYJ::SLAM_LYJ_MATH::KMeans kmeans(3, 100);
-    SLAM_LYJ::SLAM_LYJ_MATH::BitFlagVec btf(100);
-    auto ret = SLAM_LYJ::SLAM_LYJ_MATH::factorial(5, 1);
+    COMMON_LYJ::KMeans kmeans(3, 100);
+    COMMON_LYJ::BitFlagVec btf(100);
+    auto ret = COMMON_LYJ::factorial(5, 1);
 }
 
 void adjustPose()
 {
-    using namespace SLAM_LYJ;
-    using namespace SLAM_LYJ::SLAM_LYJ_MATH;
+    using namespace COMMON_LYJ;
     Eigen::Vector3f o(0, 0, 0);
     Eigen::Vector3f x(1, 0, 0);
     Eigen::Vector3f y(0, 1, 0);
@@ -102,7 +101,7 @@ void adjustPose()
     btm.setVertexs(ps);
     btm.enableVColors();
     btm.setVColors(clrs);
-    SLAM_LYJ::writePLY("D:/tmp/baseCoord.ply", btm);
+    COMMON_LYJ::writePLY("D:/tmp/baseCoord.ply", btm);
 
     Pose3D Tbt;
     Eigen::Vector3d t(1, -1, 0);
@@ -122,7 +121,7 @@ void adjustPose()
     btmT.setVertexs(pts);
     btmT.enableVColors();
     btmT.setVColors(clrs);
-    SLAM_LYJ::writePLY("D:/tmp/tCoord.ply", btmT);
+    COMMON_LYJ::writePLY("D:/tmp/tCoord.ply", btmT);
 
     Pose3D Tbc;
     Eigen::Vector3d c(1, 2, 3);
@@ -142,7 +141,7 @@ void adjustPose()
     btmC.setVertexs(pcs);
     btmC.enableVColors();
     btmC.setVColors(clrs);
-    SLAM_LYJ::writePLY("D:/tmp/cCoord.ply", btmC);
+    COMMON_LYJ::writePLY("D:/tmp/cCoord.ply", btmC);
 
     if (c(1) < 0)
     {
@@ -162,7 +161,7 @@ void adjustPose()
             btmC2.setVertexs(pc2s);
             btmC2.enableVColors();
             btmC2.setVColors(clrs);
-            SLAM_LYJ::writePLY("D:/tmp/cCoord2.ply", btmC2);
+            COMMON_LYJ::writePLY("D:/tmp/cCoord2.ply", btmC2);
         }
     }
     if (c(1) > 0)
@@ -183,7 +182,7 @@ void adjustPose()
             btmC2.setVertexs(pc2s);
             btmC2.enableVColors();
             btmC2.setVColors(clrs);
-            SLAM_LYJ::writePLY("D:/tmp/cCoord2.ply", btmC2);
+            COMMON_LYJ::writePLY("D:/tmp/cCoord2.ply", btmC2);
         }
     }
 }
@@ -551,9 +550,9 @@ namespace OBJ
             //// 写入带材质纹理的OBJ
             //writeTexturedOBJ("D:/SLAM_LYJ_Packages/SLAM_LYJ_qt/data/output.obj", mesh);
 
-            SLAM_LYJ::BaseTriMesh btm;
-            SLAM_LYJ::readOBJMesh("D:/tmp/upload_大场景贴图/大场景贴图/B5_1/sfm_texture_fusion.obj", btm);
-            SLAM_LYJ::writeOBJMesh("D:/SLAM_LYJ_Packages/SLAM_LYJ_qt/data/output.obj", btm);
+            COMMON_LYJ::BaseTriMesh btm;
+            COMMON_LYJ::readOBJMesh("D:/tmp/upload_大场景贴图/大场景贴图/B5_1/sfm_texture_fusion.obj", btm);
+            COMMON_LYJ::writeOBJMesh("D:/SLAM_LYJ_Packages/SLAM_LYJ_qt/data/output.obj", btm);
 
         }
         catch (const std::exception& e) {
@@ -567,9 +566,9 @@ namespace OBJ
 
 int testPLY()
 {
-    SLAM_LYJ::SLAM_LYJ_MATH::BaseTriMesh btmIn;
-    SLAM_LYJ::readPLY("D:/tmp/res_mesh5.ply", btmIn);
-    SLAM_LYJ::writePLYBin("D:/tmp/copy2.ply", btmIn);
+    COMMON_LYJ::BaseTriMesh btmIn;
+    COMMON_LYJ::readPLY("D:/tmp/res_mesh5.ply", btmIn);
+    COMMON_LYJ::writePLYBin("D:/tmp/copy2.ply", btmIn);
     return 0;
 
     // 创建立方体顶点（边长2，中心在原点）
@@ -578,7 +577,7 @@ int testPLY()
     std::vector<Eigen::Vector3f> vColors = {
         {0, 0, 0}, {0, 0, 1}, {0, 1, 0}, {1, 0, 0}, {0, 1, 1}, {1, 0, 1}, {1, 1, 0}, {1, 1, 1}};
     // 创建立方体面（三角形）
-    std::vector<SLAM_LYJ::SLAM_LYJ_MATH::BaseTriFace> faces = {
+    std::vector<COMMON_LYJ::BaseTriFace> faces = {
         // 底面
         {0, 1, 2},
         {2, 3, 0},
@@ -598,13 +597,13 @@ int testPLY()
         {3, 2, 6},
         {6, 7, 3}};
 
-    SLAM_LYJ::SLAM_LYJ_MATH::BaseTriMesh btm;
+    COMMON_LYJ::BaseTriMesh btm;
     btm.setVertexs(vertices);
     btm.enableVColors();
     btm.setVColors(vColors);
     btm.setFaces(faces);
-    SLAM_LYJ::writePLY("D:/tmp/cube.ply", btm);
-    SLAM_LYJ::writePLYBin("D:/tmp/cubeBin.ply", btm);
+    COMMON_LYJ::writePLY("D:/tmp/cube.ply", btm);
+    COMMON_LYJ::writePLYBin("D:/tmp/cubeBin.ply", btm);
     return 0;
 }
 
@@ -616,14 +615,14 @@ void testIO()
             Eigen::Vector3f(4, 5, 6),
             Eigen::Vector3f(7, 8, 9)};
         std::ofstream fw("D:/tmp/testIO.bin");
-        SLAM_LYJ::writeBinaryVector(fw, ps);
+        COMMON_LYJ::writeBinaryVector(fw, ps);
         fw.close();
     }
 
     {
         std::vector<Eigen::Vector3f> ps;
         std::ifstream fr("D:/tmp/testIO.bin");
-        SLAM_LYJ::readBinaryVector(fr, ps);
+        COMMON_LYJ::readBinaryVector(fr, ps);
         fr.close();
     }
 }
@@ -631,9 +630,9 @@ void testIO()
 // 示例用法
 int main2()
 {
-    SLAM_LYJ::BaseTriMesh btm;
-    SLAM_LYJ::readPLYMesh("D:/tmp/copy3.ply", btm);
-    SLAM_LYJ::writePLYMesh("D:/tmp/copy3.ply", btm);
+    COMMON_LYJ::BaseTriMesh btm;
+    COMMON_LYJ::readPLYMesh("D:/tmp/copy3.ply", btm);
+    COMMON_LYJ::writePLYMesh("D:/tmp/copy3.ply", btm);
 
     return 0;
 }
@@ -711,7 +710,7 @@ int main4() {
     std::generate(big_data.begin(), big_data.end(),
         []() { return static_cast<float>(rand()) / RAND_MAX; });
 
-    SLAM_LYJ::FLANNWrapper<float, 3> flann;
+    COMMON_LYJ::FLANNWrapper<float, 3> flann;
 
     // 构建并保存索引
     flann.build_index(big_data.data(), NUM_DATA);
@@ -723,12 +722,12 @@ int main4() {
     std::vector<float> dists(BATCH_SIZE * 1);
 
     // 执行批量查询
-    auto t_start = SLAM_LYJ::FLANNWrapper<float, 3>::Clock::now();
+    auto t_start = COMMON_LYJ::FLANNWrapper<float, 3>::Clock::now();
     flann.batch_search<1>(queries.data(), BATCH_SIZE, indices, dists);
 
     std::cout << "Batch search completed in "
         << std::chrono::duration_cast<std::chrono::microseconds>(
-            SLAM_LYJ::FLANNWrapper<float, 3>::Clock::now() - t_start).count()
+            COMMON_LYJ::FLANNWrapper<float, 3>::Clock::now() - t_start).count()
         << " μs\n";
 
     for (int i = 0; i < 1; ++i)
@@ -791,16 +790,16 @@ void genData()
             Eigen::Vector3d(0, -2, -5)
         }
     };
-    SLAM_LYJ::Pose3D Twc1(poses[0].first, poses[0].second);
-    SLAM_LYJ::Pose3D Twc2(poses[1].first, poses[1].second);
-    SLAM_LYJ::Pose3D Twc3(poses[2].first, poses[2].second);
+    COMMON_LYJ::Pose3D Twc1(poses[0].first, poses[0].second);
+    COMMON_LYJ::Pose3D Twc2(poses[1].first, poses[1].second);
+    COMMON_LYJ::Pose3D Twc3(poses[2].first, poses[2].second);
     struct CameraIntrinsics {
         double fx = 500.0, fy = 500.0; // 焦距
         double cx = 320.0, cy = 240.0; // 主点
         int width = 640, height = 480; // 图像尺寸
     };
     CameraIntrinsics intri;
-    SLAM_LYJ::PinholeCamera cam(intri.width, intri.height, intri.fx, intri.fy, intri.cx, intri.cy);
+    COMMON_LYJ::PinholeCamera cam(intri.width, intri.height, intri.fx, intri.fy, intri.cx, intri.cy);
     COMMON_LYJ::drawCam("D:/tmp/Twc1.ply", cam, Twc1, 10);
     COMMON_LYJ::drawCam("D:/tmp/Twc2.ply", cam, Twc2, 10);
     COMMON_LYJ::drawCam("D:/tmp/Twc3.ply", cam, Twc3, 10);
@@ -865,7 +864,7 @@ bool project_point(const Vector3d& p_cam, Point2D& p_pixel,
     return true;
 }
 // 主函数：生成三个位姿下的二维线观测
-int genLineData(std::vector<SLAM_LYJ::Pose3D>& _Twcs, std::vector<SLAM_LYJ::Line3d>& _lines, std::vector<std::vector<SLAM_LYJ::Line2d>>& _allObs, double _bT, double _bl, SLAM_LYJ::PinholeCamera& _cam) {
+int genLineData(std::vector<COMMON_LYJ::Pose3D>& _Twcs, std::vector<COMMON_LYJ::Line3d>& _lines, std::vector<std::vector<COMMON_LYJ::Line2d>>& _allObs, double _bT, double _bl, COMMON_LYJ::PinholeCamera& _cam) {
     // 创建边长为2的立方体
     std::vector<Point3D> vertices;
     std::vector<Line3D> edges_3d;
@@ -879,7 +878,7 @@ int genLineData(std::vector<SLAM_LYJ::Pose3D>& _Twcs, std::vector<SLAM_LYJ::Line
         const Vector3d& p2 = vertices[edge.to].coord;
 		std::cout << "(" << p1(0) << ", " << p1(1) << ", " << p1(2) << ") -> ("
 			<< p2(0) << ", " << p2(1) << ", " << p2(2) << ")\n";
-        _lines[i] = SLAM_LYJ::Line3d(p1, p2);
+        _lines[i] = COMMON_LYJ::Line3d(p1, p2);
     }
 
     // 定义三个相机位姿 [R|t] Twc
@@ -929,13 +928,13 @@ int genLineData(std::vector<SLAM_LYJ::Pose3D>& _Twcs, std::vector<SLAM_LYJ::Line
             // 仅当两端点均可见时才保留该边
             if (visible1 && visible2) {
                 visible_lines.push_back({ p1_pixel, p2_pixel });
-                _allObs[pose_idx][cnt] = SLAM_LYJ::Line2d(
+                _allObs[pose_idx][cnt] = COMMON_LYJ::Line2d(
                     Eigen::Vector2d(p1_pixel.coord.x(), p1_pixel.coord.y()),
                     Eigen::Vector2d(p2_pixel.coord.x(), p2_pixel.coord.y())
                 );
             }
             else {
-                _allObs[pose_idx][cnt] = SLAM_LYJ::Line2d();
+                _allObs[pose_idx][cnt] = COMMON_LYJ::Line2d();
             }
             ++cnt;
         }
@@ -965,13 +964,13 @@ void testTriLine3D()
     K << fx, 0, cx,
         0, fy, cy,
         0, 0, 1;
-    SLAM_LYJ::PinholeCamera cam(w, h, fx, fy, cx, cy);
-    Eigen::Matrix3d KK = SLAM_LYJ::SLAM_LYJ_MATH::Line3d::convertK2KK(K);
-    std::vector<SLAM_LYJ::Pose3D> tTwcs;
-    std::vector<SLAM_LYJ::Line3d> tline3Dws;
-    std::vector<std::vector<SLAM_LYJ::Line2d>> allObs;
+    COMMON_LYJ::PinholeCamera cam(w, h, fx, fy, cx, cy);
+    Eigen::Matrix3d KK = COMMON_LYJ::Line3d::convertK2KK(K);
+    std::vector<COMMON_LYJ::Pose3D> tTwcs;
+    std::vector<COMMON_LYJ::Line3d> tline3Dws;
+    std::vector<std::vector<COMMON_LYJ::Line2d>> allObs;
     genLineData(tTwcs, tline3Dws, allObs, 0, 0, cam);
-    std::vector<SLAM_LYJ::Pose3D> Tcws(tTwcs.size());
+    std::vector<COMMON_LYJ::Pose3D> Tcws(tTwcs.size());
     for (size_t i = 0; i < tTwcs.size(); i++)
     {
         Tcws[i] = tTwcs[i].inversed();
@@ -1008,14 +1007,14 @@ void testTriLine3D()
         Eigen::Vector3d pn1 = tTwcs[0] * spn1;
         Eigen::Vector3d pn2 = tTwcs[0] * epn1;
         Eigen::Vector3d pn3 = tTwcs[0].gett();
-        SLAM_LYJ::Plane3d pln1(pn1, pn2, pn3);
+        COMMON_LYJ::Plane3d pln1(pn1, pn2, pn3);
         Eigen::Vector4d plane1 = pln1.params;
-        SLAM_LYJ::BaseTriMesh btm1;
+        COMMON_LYJ::BaseTriMesh btm1;
         btm1.addVertex(pn1.cast<float>());
         btm1.addVertex(pn2.cast<float>());
         btm1.addVertex(pn3.cast<float>());
-        btm1.addFace(SLAM_LYJ::BaseTriFace(0, 1, 2));
-        SLAM_LYJ::writePLYMesh("D:/tmp/pln1.ply", btm1);
+        btm1.addFace(COMMON_LYJ::BaseTriFace(0, 1, 2));
+        COMMON_LYJ::writePLYMesh("D:/tmp/pln1.ply", btm1);
 
         Eigen::Vector2d sp2 = l2d2.ps.head<2>();
         Eigen::Vector2d ep2 = l2d2.ps.tail<2>();
@@ -1026,28 +1025,28 @@ void testTriLine3D()
         Eigen::Vector3d pn12 = tTwcs[1] * spn2;
         Eigen::Vector3d pn22 = tTwcs[1] * epn2;
         Eigen::Vector3d pn32 = tTwcs[1].gett();
-        SLAM_LYJ::Plane3d pln2(pn12, pn22, pn32);
+        COMMON_LYJ::Plane3d pln2(pn12, pn22, pn32);
         Eigen::Vector4d plane2 = pln2.params;
-        SLAM_LYJ::BaseTriMesh btm2;
+        COMMON_LYJ::BaseTriMesh btm2;
         btm2.addVertex(pn12.cast<float>());
         btm2.addVertex(pn22.cast<float>());
         btm2.addVertex(pn32.cast<float>());
-        btm2.addFace(SLAM_LYJ::BaseTriFace(0, 1, 2));
-        SLAM_LYJ::writePLYMesh("D:/tmp/pln2.ply", btm2);
+        btm2.addFace(COMMON_LYJ::BaseTriFace(0, 1, 2));
+        COMMON_LYJ::writePLYMesh("D:/tmp/pln2.ply", btm2);
 
-        Eigen::Matrix<double, 6, 1> plkw = SLAM_LYJ::Line3d::pipi_plk(plane1, plane2);
+        Eigen::Matrix<double, 6, 1> plkw = COMMON_LYJ::Line3d::pipi_plk(plane1, plane2);
         if (plkw.tail<3>().squaredNorm() < 1e-6)
             continue;
-        //plkw = SLAM_LYJ::Line3d::linePN_to_plk(pl, dir);
+        //plkw = COMMON_LYJ::Line3d::linePN_to_plk(pl, dir);
         {
             std::cout << plkw << std::endl << std::endl;
-            Eigen::Matrix<double, 6, 1> plkc = SLAM_LYJ::Line3d::plk_to_pose(plkw, Tcws[2].getR(), Tcws[2].gett());
+            Eigen::Matrix<double, 6, 1> plkc = COMMON_LYJ::Line3d::plk_to_pose(plkw, Tcws[2].getR(), Tcws[2].gett());
             std::cout << plkc << std::endl << std::endl;
-            Eigen::Matrix<double, 6, 1> plkw2 = SLAM_LYJ::Line3d::plk_to_pose(plkc, tTwcs[2].getR(), tTwcs[2].gett());
+            Eigen::Matrix<double, 6, 1> plkw2 = COMMON_LYJ::Line3d::plk_to_pose(plkc, tTwcs[2].getR(), tTwcs[2].gett());
             std::cout << plkw2 << std::endl << std::endl;
-            Eigen::Matrix<double, 6, 1> plkw3 = SLAM_LYJ::Line3d::plk_from_pose(plkc, Tcws[2].getR(), Tcws[2].gett());
+            Eigen::Matrix<double, 6, 1> plkw3 = COMMON_LYJ::Line3d::plk_from_pose(plkc, Tcws[2].getR(), Tcws[2].gett());
             std::cout << plkw3 << std::endl << std::endl;
-            SLAM_LYJ::Pose3D iT = Tcws[2] * tTwcs[2];
+            COMMON_LYJ::Pose3D iT = Tcws[2] * tTwcs[2];
             std::cout << iT << std::endl << std::endl;
             Eigen::Vector3d l2d = KK * plkc.head<3>();
             const auto& ps = l2d3.ps;
@@ -1063,7 +1062,7 @@ void testTriLine3D()
         }
 
         {
-            Eigen::Matrix<double, 6, 1> plkc = SLAM_LYJ::Line3d::plk_to_pose(plkw, Tcws[0].getR(), Tcws[0].gett());
+            Eigen::Matrix<double, 6, 1> plkc = COMMON_LYJ::Line3d::plk_to_pose(plkw, Tcws[0].getR(), Tcws[0].gett());
             Eigen::Vector3d l2d = KK * plkc.head<3>();
             const auto& ps = l2d1.ps;
             double l_norm = l2d(0) * l2d(0) + l2d(1) * l2d(1);
@@ -1078,7 +1077,7 @@ void testTriLine3D()
         }
 
         {
-            Eigen::Matrix<double, 6, 1> plkc = SLAM_LYJ::Line3d::plk_to_pose(plkw, Tcws[1].getR(), Tcws[1].gett());
+            Eigen::Matrix<double, 6, 1> plkc = COMMON_LYJ::Line3d::plk_to_pose(plkw, Tcws[1].getR(), Tcws[1].gett());
             Eigen::Vector3d l2d = KK * plkc.head<3>();
             const auto& ps = l2d2.ps;
             double l_norm = l2d(0) * l2d(0) + l2d(1) * l2d(1);
@@ -1102,7 +1101,7 @@ void testLine()
     Eigen::Vector2d ctr(1000.36, 1256.99);
     Eigen::Vector2d nrl(6, 9);
     nrl.normalize();
-    SLAM_LYJ::Line2d line1(ctr, nrl);
+    COMMON_LYJ::Line2d line1(ctr, nrl);
     double x = 1209;
     //double y = (-1 * line1.params[0] * x - line1.params[2]) / line1.params[1];
     double y;
@@ -1110,9 +1109,9 @@ void testLine()
         return;
     Eigen::Vector2d p1(x, y + 1);
     Eigen::Vector2d p2(x, y - 1);
-    SLAM_LYJ::Line2d line2(p1, p2);
+    COMMON_LYJ::Line2d line2(p1, p2);
     Eigen::Vector2d pInt;
-    SLAM_LYJ::Line2d::interestL2L(line1, line2, pInt);
+    COMMON_LYJ::Line2d::interestL2L(line1, line2, pInt);
     std::cout << p1 << std::endl << std::endl;
     std::cout << p2 << std::endl << std::endl;
     std::cout << pInt << std::endl << std::endl;
@@ -1158,7 +1157,7 @@ void testArgs(const int* _file, ...)
     std::cout << sum << std::endl;
 }
 class MyStruct
-//class MyStruct : public SLAM_LYJ::BaseLYJ
+//class MyStruct : public COMMON_LYJ::BaseLYJ
 {
 public:
     int id = -1;
@@ -1536,14 +1535,14 @@ void testCompressImage()
 typedef void (*PrintLoadDll)();
 void testLoadDLL()
 {
-    SLAM_LYJ::Timer<> q;
+    COMMON_LYJ::Timer<> q;
     HMODULE hDll = LoadLibraryA("D:/SLAM_LYJ_Packages/testDll/install/bin/testDll.dll");
     if (hDll == NULL)
     {
         std::cerr << "load dll error!" << GetLastError() << std::endl;
         return;
     }
-    SLAM_LYJ::LYJRAII raii([&]() {FreeLibrary(hDll); });
+    COMMON_LYJ::LYJRAII raii([&]() {FreeLibrary(hDll); });
     PrintLoadDll pPrint = (PrintLoadDll)GetProcAddress(hDll, "print_testDll_Test");
     if (pPrint == NULL)
     {

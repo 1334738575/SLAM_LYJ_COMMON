@@ -3,7 +3,7 @@
 
 namespace COMMON_LYJ
 {
-    SLAM_LYJ_API bool readT34(const std::string& _file, SLAM_LYJ::Pose3D& _T)
+    SLAM_LYJ_API bool readT34(const std::string& _file,  Pose3D& _T)
     {
         std::ifstream f(_file);
         if (!f.is_open())
@@ -15,7 +15,7 @@ namespace COMMON_LYJ
         f.close();
         return true;
     }
-    SLAM_LYJ_API bool writeT34(const std::string& _file, const SLAM_LYJ::Pose3D& _T)
+    SLAM_LYJ_API bool writeT34(const std::string& _file, const  Pose3D& _T)
     {
         std::ofstream f(_file);
         if (!f.is_open())
@@ -27,7 +27,7 @@ namespace COMMON_LYJ
         f.close();
         return true;
     }
-    SLAM_LYJ_API bool writePinCamera(const std::string& _filename, const SLAM_LYJ::PinholeCamera& _cam)
+    SLAM_LYJ_API bool writePinCamera(const std::string& _filename, const  PinholeCamera& _cam)
     {
         std::ofstream of(_filename);
         if (!of.is_open())
@@ -36,7 +36,7 @@ namespace COMMON_LYJ
         of.close();
         return true;
     }
-    SLAM_LYJ_API bool readPinCamera(const std::string& _filename, SLAM_LYJ::PinholeCamera& _cam)
+    SLAM_LYJ_API bool readPinCamera(const std::string& _filename,  PinholeCamera& _cam)
     {
         std::vector<double> params(4, 0);
         int w, h;
@@ -47,10 +47,10 @@ namespace COMMON_LYJ
         for (int i = 0; i < 4; ++i)
             f >> params[i];
         f.close();
-        _cam = SLAM_LYJ::PinholeCamera(w, h, params);
+        _cam =  PinholeCamera(w, h, params);
         return true;
     }
-    SLAM_LYJ_API bool drawCam(const std::string& _file, const SLAM_LYJ::PinholeCamera& _cam, const SLAM_LYJ::Pose3D& _Twc, const double _depth)
+    SLAM_LYJ_API bool drawCam(const std::string& _file, const  PinholeCamera& _cam, const  Pose3D& _Twc, const double _depth)
     {
         Eigen::Vector3d p1(0, 0, _depth);
         Eigen::Vector3d p2(_cam.wide(), 0, _depth);
@@ -70,24 +70,24 @@ namespace COMMON_LYJ
         P2 = _Twc * P2;
         P3 = _Twc * P3;
         P4 = _Twc * P4;
-        SLAM_LYJ::SLAM_LYJ_MATH::BaseTriMesh btmTmp;
+        BaseTriMesh btmTmp;
         std::vector<Eigen::Vector3f> psTmp;
         psTmp.push_back(P0.cast<float>());
         psTmp.push_back(P1.cast<float>());
         psTmp.push_back(P2.cast<float>());
         psTmp.push_back(P3.cast<float>());
         psTmp.push_back(P4.cast<float>());
-        std::vector<SLAM_LYJ::SLAM_LYJ_MATH::BaseTriFace> fsTmp;
+        std::vector<BaseTriFace> fsTmp;
         fsTmp.emplace_back(0, 1, 2);
         fsTmp.emplace_back(0, 2, 3);
         fsTmp.emplace_back(0, 3, 4);
         fsTmp.emplace_back(0, 4, 1);
         btmTmp.setVertexs(psTmp);
         btmTmp.setFaces(fsTmp);
-        SLAM_LYJ::writePLYMesh(_file, btmTmp);
+         writePLYMesh(_file, btmTmp);
         return true;
     }
-    SLAM_LYJ_API bool drawCoordinateSystem(const std::string& _file, const SLAM_LYJ::Pose3D& _Twc, const double _step)
+    SLAM_LYJ_API bool drawCoordinateSystem(const std::string& _file, const  Pose3D& _Twc, const double _step)
     {
         int num = 5;
         Eigen::Vector3d P0(0, 0, 0);
@@ -98,7 +98,7 @@ namespace COMMON_LYJ
         P1 = _Twc * P1;
         P2 = _Twc * P2;
         P3 = _Twc * P3;
-        SLAM_LYJ::SLAM_LYJ_MATH::BaseTriMesh btmTmp;
+        BaseTriMesh btmTmp;
         std::vector<Eigen::Vector3f> psTmp;
         std::vector<Eigen::Vector3f> clrsTmp;
         psTmp.push_back(P0.cast<float>());
@@ -115,7 +115,7 @@ namespace COMMON_LYJ
         btmTmp.setVertexs(psTmp);
         btmTmp.enableVColors();
         btmTmp.setVColors(clrsTmp);
-        SLAM_LYJ::writePLYMesh(_file, btmTmp);
+         writePLYMesh(_file, btmTmp);
         return true;
     }
     SLAM_LYJ_API bool drawCube(const std::string& _file, float _l, float _w, float _h)
@@ -132,7 +132,7 @@ namespace COMMON_LYJ
         vertices.emplace_back(L, -W, H);
         vertices.emplace_back(L, W, H);
         vertices.emplace_back(-L, W, H);
-        std::vector<SLAM_LYJ::BaseTriFace> faces;
+        std::vector< BaseTriFace> faces;
         faces.emplace_back(0, 1, 2);
         faces.emplace_back(0, 2, 3);
         faces.emplace_back(4, 5, 6);
@@ -145,10 +145,10 @@ namespace COMMON_LYJ
         faces.emplace_back(0, 7, 4);
         faces.emplace_back(1, 5, 6);
         faces.emplace_back(1, 6, 2);
-        SLAM_LYJ::BaseTriMesh btm;
+         BaseTriMesh btm;
         btm.setVertexs(vertices);
         btm.setFaces(faces);
-        SLAM_LYJ::writePLYMesh(_file, btm);
+         writePLYMesh(_file, btm);
         return true;
     }
 } // namespace COMMON_LYJ
