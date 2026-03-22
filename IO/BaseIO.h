@@ -347,6 +347,28 @@ namespace COMMON_LYJ
 		std::ofstream f(_fileName, std::ios::binary);
 		if (!f.is_open())
 		{
+			// 获取系统级错误信息（关键：定位具体原因）
+			std::error_code ec(errno, std::generic_category());
+			std::cerr << "文件打开失败！" << std::endl;
+			std::cerr << "目标路径：" << _fileName << std::endl;
+			std::cerr << "错误码：" << ec.value() << std::endl;
+			std::cerr << "错误描述：" << ec.message() << std::endl;
+
+			// 常见错误码提示（辅助排查）
+			switch (ec.value()) {
+			case 2:  // ENOENT
+				std::cerr << "【原因】路径不存在或文件未找到" << std::endl;
+				break;
+			case 13: // EACCES
+				std::cerr << "【原因】没有写入该目录的权限" << std::endl;
+				break;
+			case 17: // EEXIST（极少，通常是路径是目录）
+				std::cerr << "【原因】目标路径是一个目录，而非文件" << std::endl;
+				break;
+			default:
+				std::cerr << "【原因】其他系统错误" << std::endl;
+				break;
+			}
 			std::cout << "open file failed!" << std::endl;
 			return false;
 		}
@@ -446,7 +468,7 @@ namespace COMMON_LYJ
 		}
 		else
 		{
-			std::cout << "write binary type error!" << std::endl;
+			std::cout << "read binary type error!" << std::endl;
 		}
 	}
 	template<typename T, std::enable_if_t<is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
@@ -496,7 +518,7 @@ namespace COMMON_LYJ
 		}
 		else
 		{
-			std::cout << "write binary type error!" << std::endl;
+			std::cout << "read binary type error!" << std::endl;
 		}
 	}
 	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<is_vector_v<T>, bool> = true, std::enable_if_t<!is_user_v<T>, bool> = true>
@@ -558,7 +580,7 @@ namespace COMMON_LYJ
 		}
 		else
 		{
-			std::cout << "write binary type error!" << std::endl;
+			std::cout << "read binary type error!" << std::endl;
 		}
 	}
 	template<typename T, std::enable_if_t<!is_ptr_v<T>, bool> = true, std::enable_if_t<!is_vector_v<T>, bool> = true, std::enable_if_t<is_user_v<T>, bool> = true>
