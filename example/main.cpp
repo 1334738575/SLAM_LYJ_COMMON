@@ -637,64 +637,119 @@ int main2()
     return 0;
 }
 
-int main3() {
-    cv::Mat dst = cv::imread("D:/tmp/possion/60.png");     // 目标图像
-    cv::Mat src = cv::imread("D:/tmp/possion/imgPart2.png");     // 源图像
-
-    if (src.empty() || dst.empty()) {
-        std::cerr << "Error loading images!" << std::endl;
-        return -1;
-    }
-
-    // 自动创建掩码（假设源图像非透明区域为前景）
-    cv::Mat mask;
-    cv::cvtColor(src, mask, cv::COLOR_BGR2GRAY);
-    cv::threshold(mask, mask, 1, 255, cv::THRESH_BINARY);
-
-    // 设置融合位置（默认目标图像中心）
-    cv::Point center(950, 1050);
-
-    // 执行Poisson融合
-    cv::Mat result;
-    cv::seamlessClone(src, dst, mask, center, result, cv::NORMAL_CLONE);
-
-    // 显示并保存结果
-    cv::imshow("Result", result);
-    cv::imwrite("D:/tmp/possion/fusion_result.png", result);
-    cv::waitKey(0);
-    return 0;
-}
-
-
 int testPossion()
 {
-    //main3();
+    if(false)
+    {
+        cv::Mat dst = cv::imread("D:/tmp/possion/60.png");     // 目标图像
+        cv::Mat src = cv::imread("D:/tmp/possion/imgPart2.png");     // 源图像
 
-    long start, end;
-    start = clock();
+        if (src.empty() || dst.empty()) {
+            std::cerr << "Error loading images!" << std::endl;
+            return -1;
+        }
 
-    cv::Mat img = cv::imread("D:/tmp/possion/imgPart2.png");
-    cv::Mat img2 = cv::imread("D:/tmp/possion/60.png");
-    //cv::pyrDown(img2, img2);
-    //cv::pyrDown(img2, img2);
-    //cv::pyrDown(img, img);
-    //cv::pyrDown(img, img);
-    //cv::pyrDown(img, img);
-    //cv::pyrDown(img, img);
-    cv::Rect rect(0, 0, img.cols, img.rows);
-    cv::Mat img1 = img(rect);
-    std::cout << img1.rows << " " << img1.cols << std::endl;
+        // 自动创建掩码（假设源图像非透明区域为前景）
+        cv::Mat mask;
+        cv::cvtColor(src, mask, cv::COLOR_BGR2GRAY);
+        cv::threshold(mask, mask, 1, 255, cv::THRESH_BINARY);
 
-    COMMON_LYJ::ImagePossionSolver possionSolver;
-    cv::Mat mask;
-    cv::Point2i center(950, 1050);
-    possionSolver.possionSolve(img1, img2, mask, center);
+        // 设置融合位置（默认目标图像中心）
+        cv::Point center(950, 1050);
 
-    end = clock();
-    std::cout << "used time: " << ((double)(end - start)) / CLOCKS_PER_SEC << " second" << std::endl;
-    cv::imwrite("D:/tmp/possion/possion.png", img2);
-    //cv::imshow("result", img2);
-    //cv::waitKey(0);
+        // 执行Poisson融合
+        cv::Mat result;
+        cv::seamlessClone(src, dst, mask, center, result, cv::NORMAL_CLONE);
+
+        // 显示并保存结果
+        cv::imshow("Result", result);
+        cv::imwrite("D:/tmp/possion/fusion_result.png", result);
+        cv::waitKey(0);
+        return 0;
+    }
+    if (true)
+    {
+        cv::Mat dst = cv::imread("D:/tmp/colmapData/mask/images/0030.jpg");     // 目标图像
+        cv::Mat src = cv::imread("D:/tmp/colmapData/mask/images/0366.jpg");     // 源图像
+
+        if (src.empty() || dst.empty()) {
+            std::cerr << "Error loading images!" << std::endl;
+            return -1;
+        }
+
+        int w = 50;
+        int h = 100;
+        cv::Rect rect1(500, 150, w, h);
+        cv::Rect rect2(50, 200, w, h);
+        cv::Mat ddd = dst(rect1);
+        cv::Mat sss = src(rect2);
+
+        cv::imshow("d", ddd);
+        cv::imshow("s", sss);
+        cv::waitKey();
+
+        cv::Mat mmm = cv::Mat::zeros(ddd.rows, ddd.cols + sss.cols, CV_8UC3);
+        mmm.setTo(cv::Scalar(255, 255, 255));
+        cv::Rect rect3(0, 0, w, h);
+        ddd.copyTo(mmm(rect3));
+        cv::imshow("m", mmm);
+        cv::waitKey();
+
+        // 自动创建掩码（假设源图像非透明区域为前景）
+        cv::Mat mask;
+        cv::cvtColor(sss, mask, cv::COLOR_BGR2GRAY);
+        cv::threshold(mask, mask, 1, 255, cv::THRESH_BINARY);
+        cv::imshow("mask", mask);
+        cv::waitKey();
+        
+        // 设置融合位置（默认目标图像中心）
+        cv::Point center(w * 2 / 2 , h / 2);
+
+        // 执行Poisson融合
+        cv::Mat result;
+        //cv::seamlessClone(sss, mmm, mask, center, result, cv::NORMAL_CLONE);
+
+        COMMON_LYJ::ImagePossionSolver possionSolver;
+        cv::Mat mask2;
+        cv::Mat mmm2 = mmm.clone();
+        possionSolver.possionSolve(sss, mmm2, mask2, center);
+        result = mmm2;
+
+        // 显示并保存结果
+        cv::imshow("Result", result);
+        cv::imwrite("D:/tmp/possion/fusion_result.png", result);
+        cv::waitKey(0);
+        return 0;
+    }
+    else
+    {
+        long start, end;
+        start = clock();
+
+        cv::Mat img = cv::imread("D:/tmp/possion/imgPart2.png");
+        cv::Mat img2 = cv::imread("D:/tmp/possion/60.png");
+        //cv::pyrDown(img2, img2);
+        //cv::pyrDown(img2, img2);
+        //cv::pyrDown(img, img);
+        //cv::pyrDown(img, img);
+        //cv::pyrDown(img, img);
+        //cv::pyrDown(img, img);
+        cv::Rect rect(0, 0, img.cols, img.rows);
+        cv::Mat img1 = img(rect);
+        std::cout << img1.rows << " " << img1.cols << std::endl;
+
+        COMMON_LYJ::ImagePossionSolver possionSolver;
+        cv::Mat mask;
+        cv::Point2i center(950, 1050);
+        possionSolver.possionSolve(img1, img2, mask, center);
+
+        end = clock();
+        std::cout << "used time: " << ((double)(end - start)) / CLOCKS_PER_SEC << " second" << std::endl;
+        cv::imwrite("D:/tmp/possion/possion.png", img2);
+        //cv::imshow("result", img2);
+        //cv::waitKey(0);
+        return 0;
+    }
     return 0;
 }
 
@@ -1590,7 +1645,7 @@ int main(int argc, char *argv[])
 {
     std::cout << "Hello COMMON_LYJ" << std::endl;
 
-    testColmapIO();
+    //testColmapIO();
     //OBJ::main5();
     //testLoadDLL();
     //testCompressImage();
@@ -1600,7 +1655,7 @@ int main(int argc, char *argv[])
     // adjustPose();
     // testPLY();
     //main2();
-    //testPossion();
+    testPossion();
     //main4();
     // testIO();
     // testOBJ();
