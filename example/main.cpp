@@ -50,6 +50,187 @@
 
 #include <Windows.h>
 
+#include <IO/BaseIO2.h>
+
+#include <array>
+#include <cassert>
+#include <cstdio>
+#include <iostream>
+#include <optional>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
+
+namespace
+{
+    enum class Color : std::uint8_t
+    {
+        Red = 1,
+        Green = 2,
+        Blue = 3
+    };
+
+    struct Person
+    {
+        std::int32_t id = 0;
+        std::string name;
+        std::vector<double> scores;
+        //std::optional<std::string> note;
+        std::string note = "111";
+
+        void write_binary(std::ofstream& writer) const
+        {
+            COMMON_LYJ::writeBinDatas(writer, id, name, scores, note);
+        }
+
+        void read_binary(std::ifstream& reader)
+        {
+            COMMON_LYJ::readBinDatas(reader, id, name, scores, note);
+        }
+
+        bool operator==(const Person& other) const
+        {
+            return id == other.id
+                && name == other.name
+                && scores == other.scores
+                && note == other.note;
+        }
+    };
+}
+
+int testIO2()
+{
+    const std::string file_name = "baseio2_roundtrip.bin";
+
+    const std::int32_t expected_i32 = -123456;
+    const std::uint64_t expected_u64 = 9876543210ULL;
+    const bool expected_flag = true;
+    const float expected_f32 = 1.25F;
+    const double expected_f64 = 3.1415926535;
+    const std::string expected_text = "cross-platform-binary-io";
+    const std::vector<std::int32_t> expected_vec = { 1, 2, 3, 5, 8, 13 };
+    const std::list<std::string> expected_list = { "alpha", "beta", "gamma" };
+    const std::set<std::int32_t> expected_set = { 7, 9, 11 };
+    const std::map<std::string, std::int32_t> expected_map = { {"x", 10}, {"y", 20} };
+    const std::unordered_map<std::string, std::vector<std::int32_t>> expected_umap = {
+        {"left", {1, 2}},
+        {"right", {3, 4, 5}},
+    };
+    const std::array<std::int32_t, 4> expected_array = { 4, 3, 2, 1 };
+    const std::pair<std::string, std::int32_t> expected_pair = { "pair", 99 };
+    const std::tuple<std::int32_t, std::string, double> expected_tuple = { 7, "tuple", 6.5 };
+    const std::optional<std::string> expected_optional = std::string("optional-value");
+    const Color expected_color = Color::Blue;
+    const Person expected_person = { 42, "Alice", {98.5, 87.0, 91.5}, std::string("custom object") };
+    const std::vector<Person> expected_people = {
+        expected_person,
+        {7, "Bob", {80.0, 81.5}, std::string("custom object2")},
+    };
+
+    try
+    {
+        if (!COMMON_LYJ2::writeBinFile(
+            file_name,
+            expected_i32,
+            expected_u64,
+            expected_flag,
+            expected_f32,
+            expected_f64,
+            expected_text,
+            expected_vec,
+            expected_list,
+            expected_set,
+            expected_map,
+            expected_umap,
+            expected_array,
+            expected_pair,
+            expected_tuple,
+            expected_optional,
+            expected_color,
+            expected_person,
+            expected_people))
+        {
+            std::cerr << "writeBinFile failed\n";
+            return 1;
+        }
+
+        std::int32_t actual_i32 = 0;
+        std::uint64_t actual_u64 = 0;
+        bool actual_flag = false;
+        float actual_f32 = 0.0F;
+        double actual_f64 = 0.0;
+        std::string actual_text;
+        std::vector<std::int32_t> actual_vec;
+        std::list<std::string> actual_list;
+        std::set<std::int32_t> actual_set;
+        std::map<std::string, std::int32_t> actual_map;
+        std::unordered_map<std::string, std::vector<std::int32_t>> actual_umap;
+        std::array<std::int32_t, 4> actual_array{};
+        std::pair<std::string, std::int32_t> actual_pair;
+        std::tuple<std::int32_t, std::string, double> actual_tuple;
+        std::optional<std::string> actual_optional;
+        Color actual_color = Color::Red;
+        Person actual_person;
+        std::vector<Person> actual_people;
+
+        if (!COMMON_LYJ2::readBinFile(
+            file_name,
+            actual_i32,
+            actual_u64,
+            actual_flag,
+            actual_f32,
+            actual_f64,
+            actual_text,
+            actual_vec,
+            actual_list,
+            actual_set,
+            actual_map,
+            actual_umap,
+            actual_array,
+            actual_pair,
+            actual_tuple,
+            actual_optional,
+            actual_color,
+            actual_person,
+            actual_people))
+        {
+            std::cerr << "readBinFile failed\n";
+            return 1;
+        }
+
+        assert(actual_i32 == expected_i32);
+        assert(actual_u64 == expected_u64);
+        assert(actual_flag == expected_flag);
+        assert(actual_f32 == expected_f32);
+        assert(actual_f64 == expected_f64);
+        assert(actual_text == expected_text);
+        assert(actual_vec == expected_vec);
+        assert(actual_list == expected_list);
+        assert(actual_set == expected_set);
+        assert(actual_map == expected_map);
+        assert(actual_umap == expected_umap);
+        assert(actual_array == expected_array);
+        assert(actual_pair == expected_pair);
+        assert(actual_tuple == expected_tuple);
+        assert(actual_optional == expected_optional);
+        assert(actual_color == expected_color);
+        assert(actual_person == expected_person);
+        assert(actual_people == expected_people);
+    }
+    catch (const std::exception& ex)
+    {
+        std::remove(file_name.c_str());
+        std::cerr << ex.what() << '\n';
+        return 1;
+    }
+
+    //std::remove(file_name.c_str());
+    std::cout << "baseio2 roundtrip test passed\n";
+    return 0;
+}
+
+
 void testDefine()
 {
 
@@ -1645,6 +1826,7 @@ int main(int argc, char *argv[])
 {
     std::cout << "Hello COMMON_LYJ" << std::endl;
 
+    testIO2();
     //testColmapIO();
     //OBJ::main5();
     //testLoadDLL();
@@ -1655,7 +1837,7 @@ int main(int argc, char *argv[])
     // adjustPose();
     // testPLY();
     //main2();
-    testPossion();
+    //testPossion();
     //main4();
     // testIO();
     // testOBJ();
